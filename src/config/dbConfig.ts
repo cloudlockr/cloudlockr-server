@@ -1,13 +1,13 @@
 import { ConnectionOptions } from "typeorm";
 import { User } from "../entities/User";
-import { __prod__ } from "../constants";
+import { DB_NAME, DB_PASSWORD, DB_USERNAME, __prod__ } from "../constants";
 
 // database connection configuration for TypeORM
 export default {
   type: "postgres",
-  username: process.env.DB_UESRNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  username: DB_USERNAME,
+  password: DB_PASSWORD,
+  database: DB_NAME,
   entities: [User],
   synchronize: true,
   logging: !__prod__,

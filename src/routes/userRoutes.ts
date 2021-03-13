@@ -1,4 +1,5 @@
 import { Router } from "express";
+import isAuth from "../middleware/isAuth";
 import userController from "../controllers/user";
 import {
   emailValidator,
@@ -8,7 +9,9 @@ import registerValidator from "../middleware/registerValidator";
 
 const router = Router();
 
-router.get("/files", userController.getFiles);
+router.get("/me", isAuth, userController.me);
+
+router.get("/files", isAuth, userController.getFiles);
 
 router.post(
   "/login",
@@ -19,8 +22,10 @@ router.post(
 
 router.post("/register", registerValidator(), userController.register);
 
-router.post("/refresh", userController.refresh);
+router.post("/logout", isAuth, userController.logout);
 
-router.delete("/", userController.deleteUser);
+router.post("/refresh", isAuth, userController.refresh);
+
+router.delete("/", isAuth, userController.deleteUser);
 
 export default router;

@@ -1,8 +1,9 @@
-import { IncomingHttpHeaders } from "http";
+import "express";
+import "express-session";
+import "http";
 import Redis from "ioredis";
-import { Request } from "express";
 import { User } from "../entities/User";
-import { Session, SessionData } from "express-session";
+import { jsonResponse } from "../types";
 
 declare module "http" {
   interface IncomingHttpHeaders {
@@ -15,6 +16,10 @@ declare module "express" {
   interface Request {
     redis?: Redis.Redis;
     user?: User;
+  }
+
+  interface Response {
+    json: (body?: jsonResponse) => Response<any, Record<string, any>>;
   }
 }
 

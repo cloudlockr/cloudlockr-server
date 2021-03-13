@@ -6,6 +6,7 @@ import logger from "morgan";
 import { createConnection } from "typeorm";
 import dbConfig from "./config/dbConfig";
 import { attachRedis, sessionConfig } from "./config/sessionConfig";
+import { PORT } from "./constants";
 import fileRouter from "./routes/fileRoutes";
 import userRouter from "./routes/userRoutes";
 
@@ -16,7 +17,6 @@ const main = async () => {
   // create express app and server
   const app = express();
   const server = http.createServer(app);
-  const port = process.env.PORT || 5000;
 
   // middlewares
   app.use(session(sessionConfig));
@@ -34,8 +34,8 @@ const main = async () => {
     res.status(404).send("404 error");
   });
 
-  server.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+  server.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
   });
 };
 
