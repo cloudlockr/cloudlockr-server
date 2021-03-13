@@ -7,6 +7,7 @@ const getFiles = async (req: Request, res: Response) => {
   //////////////////////////
   // TODO: implement this //
   //////////////////////////
+  console.log(req.session.userId);
   res.send("GET /user/files");
 };
 
@@ -19,7 +20,11 @@ const login = async (req: Request, res: Response) => {
   }
 
   const user = req.user;
-  res.send("POST hi/user/login");
+
+  // log user in
+  req.session.userId = user!.id;
+
+  return res.status(200).json({ email: user!.email });
 };
 
 const register = async (req: Request, res: Response) => {
@@ -37,6 +42,9 @@ const register = async (req: Request, res: Response) => {
     password: hashedPassword,
   }).save();
 
+  // log user in
+  req.session.userId = user.id;
+
   return res.status(200).json({ email: user.email });
 };
 
@@ -49,8 +57,9 @@ const refresh = async (req: Request, res: Response) => {
 
 const deleteUser = async (req: Request, res: Response) => {
   const { email } = req.headers;
+  // TODO: ADD authentication
   await User.delete({ email });
-  return true;
+  return res.status(200).json({ deleted: true });
 };
 
 export default { getFiles, login, register, refresh, deleteUser };
