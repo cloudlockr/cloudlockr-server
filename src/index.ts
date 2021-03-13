@@ -1,27 +1,27 @@
 import "dotenv/config";
 import express from "express";
 import http from "http";
+import logger from "morgan";
 import { createConnection } from "typeorm";
-import { __prod__ } from "./constants";
-import { User } from "./entities/User";
+import dbConfig from "./config/dbConfig";
 import fileRouter from "./routes/fileRoutes";
 import userRouter from "./routes/userRoutes";
 
 const main = async () => {
   // creating postgres connection through TypeORM
-  // const dbconn = await createConnection({
-  //   type: "postgres",
-  //   database: process.env.DB_NAME,
-  //   entities: [User],
-  //   synchronize: true,
-  //   logging: !__prod__,
-  // });
+  const dbconn = await createConnection(dbConfig);
 
+  // create express app and server
   const app = express();
   const server = http.createServer(app);
   const port = process.env.PORT || 5000;
 
-  // use routes
+  // middlewares
+  app.use(logger("dev"));
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
+
+  // available routes
   app.use("/file", fileRouter);
   app.use("/user", userRouter);
 

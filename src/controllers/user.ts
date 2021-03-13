@@ -1,31 +1,56 @@
+import argon2 from "argon2";
 import { Request, Response } from "express";
+import { validationResult } from "express-validator";
 import { User } from "../entities/User";
 
 const getFiles = async (req: Request, res: Response) => {
+  //////////////////////////
+  // TODO: implement this //
+  //////////////////////////
   res.send("GET /user/files");
 };
 
 const login = async (req: Request, res: Response) => {
-  const { email, password } = req.headers;
-  // will add a better validator in the future
-  // probably custom validator middleware
-  if (!email || !password) {
-    console.log("ERROR");
-    res.status(400).send("ERROR");
-  } else {
-    console.log(email, password);
-    res.send("POST /user/login");
+  const errorObj = validationResult(req);
+  if (!errorObj.isEmpty()) {
+    const errors: Array<any> = [];
+    errorObj.array().map((err) => errors.push({ [err.param]: err.msg }));
+    return res.status(422).json({ errors });
   }
+
+  const user = req.user;
+  res.send("POST hi/user/login");
 };
 
 const register = async (req: Request, res: Response) => {
+  const errorObj = validationResult(req);
+  if (!errorObj.isEmpty()) {
+    const errors: Array<any> = [];
+    errorObj.array().map((err) => errors.push({ [err.param]: err.msg }));
+    return res.status(422).json({ errors });
+  }
+
   const { email, password } = req.headers;
-  console.log(email, password);
-  res.send("POST /user/register");
+  const hashedPassword = await argon2.hash(password!);
+  const user = await User.create({
+    email,
+    password: hashedPassword,
+  }).save();
+
+  return res.status(200).json({ email: user.email });
 };
 
 const refresh = async (req: Request, res: Response) => {
+  //////////////////////////
+  // TODO: implement this //
+  //////////////////////////
   res.send("POST /user/refresh");
 };
 
-export default { getFiles, login, register, refresh };
+const deleteUser = async (req: Request, res: Response) => {
+  const { email } = req.headers;
+  await User.delete({ email });
+  return true;
+};
+
+export default { getFiles, login, register, refresh, deleteUser };
