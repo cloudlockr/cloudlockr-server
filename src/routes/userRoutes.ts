@@ -9,8 +9,6 @@ import registerValidator from "../middleware/registerValidator";
 
 const router = Router();
 
-router.get("/me", isAuth, userController.me);
-
 router.get("/files", isAuth, userController.getFiles);
 
 router.post(

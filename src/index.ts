@@ -1,11 +1,11 @@
-import cookieParser from "cookie-parser";
 import "dotenv/config";
 import express from "express";
+import session from "express-session";
 import http from "http";
 import logger from "morgan";
 import { createConnection } from "typeorm";
 import dbConfig from "./config/dbConfig";
-import { attachRedis } from "./config/sessionConfig";
+import { sessionConfig, attachRedis } from "./config/sessionConfig";
 import { PORT } from "./constants";
 import fileRouter from "./routes/fileRoutes";
 import userRouter from "./routes/userRoutes";
@@ -19,9 +19,10 @@ const main = async () => {
   const server = http.createServer(app);
 
   // middlewares
+  app.disable("x-power-by");
+  app.use(session(sessionConfig));
   app.use(attachRedis);
   app.use(logger("dev"));
-  app.use(cookieParser());
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
