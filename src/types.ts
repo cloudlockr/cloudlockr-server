@@ -1,7 +1,7 @@
-type jsonResponse = {
-  message?: string;
-  email?: string;
-  errors?: Array<any>;
+type payloadType = {
+  id: string;
+  iat: number;
+  exp: number;
 };
 
-export { jsonResponse };
+export { payloadType };

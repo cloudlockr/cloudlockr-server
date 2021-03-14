@@ -3,7 +3,7 @@ import "express-session";
 import "http";
 import Redis from "ioredis";
 import { User } from "../entities/User";
-import { jsonResponse } from "../types";
+import { payloadType } from "../types";
 
 declare module "http" {
   interface IncomingHttpHeaders {
@@ -15,11 +15,8 @@ declare module "http" {
 declare module "express" {
   interface Request {
     redis?: Redis.Redis;
+    payload?: payloadType;
     user?: User;
-  }
-
-  interface Response {
-    json: (body?: jsonResponse) => Response<any, Record<string, any>>;
   }
 }
 
