@@ -1,7 +1,5 @@
 import connectRedis from "connect-redis";
-import { NextFunction, Request, Response } from "express";
 import session, { SessionOptions } from "express-session";
-import Redis from "ioredis";
 import { v4 } from "uuid";
 import {
   COOKIE_NAME,
@@ -9,9 +7,9 @@ import {
   SESSION_SECRET,
   __prod__,
 } from "../constants";
+import { redis } from "./redisConfig";
 
 const RedisStore = connectRedis(session);
-const redis = new Redis();
 
 const sessionConfig: SessionOptions = {
   store: new RedisStore({ client: redis }),
@@ -32,9 +30,4 @@ const sessionConfig: SessionOptions = {
   saveUninitialized: false,
 };
 
-const attachRedis = (req: Request, _: Response, next: NextFunction) => {
-  req.redis = redis;
-  next();
-};
-
-export { sessionConfig, attachRedis };
+export { sessionConfig };

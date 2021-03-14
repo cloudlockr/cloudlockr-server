@@ -5,8 +5,10 @@ import http from "http";
 import logger from "morgan";
 import { createConnection } from "typeorm";
 import dbConfig from "./config/dbConfig";
-import { sessionConfig, attachRedis } from "./config/sessionConfig";
+import { attachRedis } from "./config/redisConfig";
+import { sessionConfig } from "./config/sessionConfig";
 import { PORT } from "./constants";
+import generalRateLimiter from "./middleware/generalRateLimiter";
 import fileRouter from "./routes/fileRoutes";
 import userRouter from "./routes/userRoutes";
 
@@ -25,6 +27,7 @@ const main = async () => {
   app.use(logger("dev"));
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+  app.use(generalRateLimiter);
 
   // available routes
   app.use("/file", fileRouter);

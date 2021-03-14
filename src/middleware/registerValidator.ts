@@ -18,7 +18,7 @@ const registerValidator = (): Array<ValidationChain> => {
       .bail()
       .custom(emailUsed),
     header("password")
-      .isLength({ min: 6 })
+      .isLength({ min: 10 })
       .withMessage("Password must be at least 6 characters long"),
   ];
 };

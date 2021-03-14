@@ -30,6 +30,7 @@
     "ioredis": "^4.23.0",
     "morgan": "^1.10.0",
     "pg": "^8.5.1",
+    "rate-limiter-flexible": "^2.2.1",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.31",
     "uuid": "^8.3.2"
