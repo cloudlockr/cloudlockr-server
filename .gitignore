@@ -3,3 +3,6 @@ build
 .env
 .env.production
 database.env
+
+# vim backup file
+*.swp
