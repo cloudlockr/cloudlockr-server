@@ -5,10 +5,10 @@ import http from "http";
 import logger from "morgan";
 import { createConnection } from "typeorm";
 import dbConfig from "./config/dbConfig";
-import { attachRedis } from "./config/redisConfig";
 import { sessionConfig } from "./config/sessionConfig";
 import { PORT } from "./constants";
-import generalRateLimiter from "./middleware/generalRateLimiter";
+import customMiddleware from "./middlewares/customMiddleware";
+import generalRateLimiter from "./middlewares/generalRateLimiter";
 import fileRouter from "./routes/fileRoutes";
 import userRouter from "./routes/userRoutes";
 
@@ -22,15 +22,17 @@ const main = async () => {
 
   // middlewares
   app.disable("x-power-by");
-  app.use(session(sessionConfig));
-  app.use(attachRedis);
-  app.use(logger("dev"));
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
-  app.use(generalRateLimiter);
+  app.use(logger("dev"));
+  app.use(session(sessionConfig));
+  app.use(customMiddleware);
 
-  // available routes
+  // routes for DE1
   app.use("/file", fileRouter);
+
+  // routes for app, rate limited
+  app.use("/user", generalRateLimiter);
   app.use("/user", userRouter);
 
   // 404 bad request

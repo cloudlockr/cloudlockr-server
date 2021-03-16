@@ -1,8 +1,7 @@
 import "express";
 import "express-session";
 import "http";
-import Redis from "ioredis";
-import { User } from "../entities/User";
+import { reqCustomField } from "../types";
 
 declare module "http" {
   interface IncomingHttpHeaders {
@@ -13,8 +12,7 @@ declare module "http" {
 
 declare module "express" {
   interface Request {
-    redis?: Redis.Redis;
-    user?: User;
+    custom?: reqCustomField;
   }
 }
 
@@ -23,6 +21,6 @@ declare module "express-session" {
     // field to store logged in user's id
     userId: string;
     // arbitrary field for refresh endpoint to touch
-    touchField: boolean;
+    refreshTouch: boolean;
   }
 }

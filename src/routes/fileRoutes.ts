@@ -4,7 +4,7 @@ const router = Router();
 
 router.get("/:fileId", (req, res) => {
   const { fileId } = req.params;
-  res.send("GET /file/" + fileId);
+  return res.send("GET /file/" + fileId);
 });
 
 router.get("/:fileId/:blobNumber", (req, res) => {

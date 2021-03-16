@@ -12,7 +12,6 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     await dayRateLimiter.consume(req.ip);
     next();
   } catch (error) {
-    console.log(error);
     res
       .status(429)
       .json({ ok: false, errors: [{ message: "Too many requests" }] });

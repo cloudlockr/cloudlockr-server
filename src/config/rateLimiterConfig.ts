@@ -1,5 +1,7 @@
 import { RateLimiterRedis } from "rate-limiter-flexible";
 import {
+  LOGIN_POINTS,
+  LOGIN_PREFIX,
   RATE_DAY_BLOCK,
   RATE_DAY_POINTS,
   RATE_DAY_PREFIX,
@@ -38,5 +40,11 @@ const dayRateLimiter = new RateLimiterRedis({
 });
 
 // TODO: rate limiting for login, register, and forget password
+const loginLimiter = new RateLimiterRedis({
+  storeClient: redis,
+  points: LOGIN_POINTS,
+  duration: 60 * 60 * 24 * 30,
+  keyPrefix: LOGIN_PREFIX,
+});
 
-export { secondRateLimiter, hourRateLimiter, dayRateLimiter };
+export { secondRateLimiter, hourRateLimiter, dayRateLimiter, loginLimiter };

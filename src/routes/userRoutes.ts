@@ -1,20 +1,22 @@
 import { Router } from "express";
-import isAuth from "../middleware/isAuth";
 import userController from "../controllers/user";
+import isAuth from "../middlewares/isAuth";
+import postLimiter from "../middlewares/loginRateLimiter/postLimiter";
+import preLimiter from "../middlewares/loginRateLimiter/preLimiter";
 import {
   emailValidator,
   passwordValidator,
-} from "../middleware/loginValidator";
-import registerValidator from "../middleware/registerValidator";
+} from "../middlewares/loginValidator";
+import registerValidator from "../middlewares/registerValidator";
 
 const router = Router();
 
-router.get("/files", isAuth, userController.getFiles);
-
 router.post(
   "/login",
+  preLimiter,
   emailValidator(),
   passwordValidator(),
+  postLimiter,
   userController.login
 );
 
@@ -25,5 +27,7 @@ router.post("/logout", isAuth, userController.logout);
 router.post("/refresh", isAuth, userController.refresh);
 
 router.delete("/", isAuth, userController.deleteUser);
+
+router.get("/files", isAuth, userController.getFiles);
 
 export default router;

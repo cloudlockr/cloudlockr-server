@@ -4,29 +4,14 @@ import { validationResult } from "express-validator";
 import { COOKIE_NAME } from "../constants";
 import { User } from "../entities/User";
 
-const getFiles = async (req: Request, res: Response) => {
-  //////////////////////////
-  // TODO: implement this //
-  //////////////////////////
-  res.send("GET /user/files");
-};
-
 const login = async (req: Request, res: Response) => {
-  const errorObj = validationResult(req);
-  if (!errorObj.isEmpty()) {
-    // return errors if any exist
-    const errors: Array<any> = [];
-    errorObj.array().map((err) => errors.push({ [err.param]: err.msg }));
-    res.status(422).json({ ok: false, errors });
-  } else {
-    // regenerate session before log in
-    req.session.regenerate((_) => {
-      // log user in
-      req.session.userId = req.user!.id;
-      req.session.touchField = true;
-      res.status(200).json({ ok: true, message: "Logged in" });
-    });
-  }
+  // regenerate session before log in
+  req.session.regenerate((_) => {
+    // log user in
+    req.session.userId = req.custom!.user!.id;
+    req.session.refreshTouch = true;
+    res.status(200).json({ ok: true, message: "Logged in" });
+  });
 };
 
 const register = async (req: Request, res: Response) => {
@@ -49,7 +34,7 @@ const register = async (req: Request, res: Response) => {
     req.session.regenerate((_) => {
       // log user in
       req.session.userId = user.id;
-      req.session.touchField = true;
+      req.session.refreshTouch = true;
       res.status(200).json({ ok: true, message: "New account registered" });
     });
   }
@@ -64,14 +49,25 @@ const logout = async (req: Request, res: Response) => {
 };
 
 const refresh = async (req: Request, res: Response) => {
-  req.session.touchField = !req.session.touchField;
+  req.session.refreshTouch = !req.session.refreshTouch;
   res.status(200).json({ ok: true, message: "Refreshed" });
 };
 
 const deleteUser = async (req: Request, res: Response) => {
   await User.delete({ id: req.session.userId });
   // TODO: delete all user files!!!
-  res.status(200).json({ ok: true, message: "Account deleted" });
+  req.session.destroy((_) => {
+    // clear cookie from client side
+    res.clearCookie(COOKIE_NAME);
+    res.status(200).json({ ok: true, message: "Account deleted" });
+  });
+};
+
+const getFiles = async (req: Request, res: Response) => {
+  //////////////////////////
+  // TODO: implement this //
+  //////////////////////////
+  res.send("GET /user/files");
 };
 
 export default { getFiles, login, register, logout, refresh, deleteUser };

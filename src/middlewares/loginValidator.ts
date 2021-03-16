@@ -6,15 +6,15 @@ const emailUsed: CustomValidator = async (email, { req }) => {
   // Resolve no matter what because we only reject in password validator
   const user = await User.findOne({ where: { email } });
   if (user) {
-    req.user = user;
+    req.custom = { user };
   }
   return Promise.resolve();
 };
 
 const passwordCorrect: CustomValidator = async (password, { req }) => {
-  if (req.user) {
+  if (req.custom.user) {
     // If the user has entered a valid email, check whether password is correct
-    if (await argon2.verify(req.user.password, password)) {
+    if (await argon2.verify(req.custom.user.password, password)) {
       return Promise.resolve();
     }
     // Reject because user entered incorrect password

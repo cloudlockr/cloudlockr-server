@@ -4,6 +4,7 @@ import { v4 } from "uuid";
 import {
   COOKIE_NAME,
   SESSION_LIFETIME,
+  SESSION_PREFIX,
   SESSION_SECRET,
   __prod__,
 } from "../constants";
@@ -12,7 +13,7 @@ import { redis } from "./redisConfig";
 const RedisStore = connectRedis(session);
 
 const sessionConfig: SessionOptions = {
-  store: new RedisStore({ client: redis }),
+  store: new RedisStore({ client: redis, prefix: SESSION_PREFIX }),
   cookie: {
     secure: __prod__, // HTTPS only
     httpOnly: true, // prevent client side javascript from accessing cookie
@@ -30,4 +31,4 @@ const sessionConfig: SessionOptions = {
   saveUninitialized: false,
 };
 
-export { sessionConfig };
+export { sessionConfig, RedisStore };
