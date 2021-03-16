@@ -15,7 +15,8 @@ const RedisStore = connectRedis(session);
 const sessionConfig: SessionOptions = {
   store: new RedisStore({ client: redis, prefix: SESSION_PREFIX }),
   cookie: {
-    secure: __prod__, // HTTPS only
+    // secure: __prod__, // HTTPS only
+    secure: false,
     httpOnly: true, // prevent client side javascript from accessing cookie
     // domain: 'cloudlockr.com',
     // path: '/user',

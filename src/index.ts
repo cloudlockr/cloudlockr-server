@@ -29,6 +29,11 @@ const main = async () => {
   app.use(session(sessionConfig));
   app.use(customMiddleware);
 
+  // GET index route just for some visuals on browser
+  app.get("/", (_, res) => {
+    res.status(200).send("Cloudlockr index page, nothing of note here");
+  });
+
   // routes for DE1
   app.use("/file", fileRouter);
 
