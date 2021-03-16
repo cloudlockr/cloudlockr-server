@@ -12,7 +12,7 @@ router.get("/:fileId/:blobNumber", (req, res) => {
   res.send(`GET /file/${fileId}/${blobNumber}`);
 });
 
-router.post("/", (req, res) => {
+router.post("/", (_, res) => {
   res.send("POST /file");
 });
 

@@ -63,7 +63,7 @@ const deleteUser = async (req: Request, res: Response) => {
   });
 };
 
-const getFiles = async (req: Request, res: Response) => {
+const getFiles = async (_: Request, res: Response) => {
   //////////////////////////
   // TODO: implement this //
   //////////////////////////

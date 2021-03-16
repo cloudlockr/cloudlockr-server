@@ -4,6 +4,8 @@ export const PORT = process.env.PORT || 5000;
 export const DB_USERNAME = process.env.DB_USERNAME || "postgres";
 export const DB_PASSWORD = process.env.DB_PASSWORD || "postgres";
 export const DB_NAME = process.env.DB_NAME || "cloudlockr";
+export const DB_URL = process.env.DB_URL;
+export const REDIS_URL = process.env.REDIS_URL;
 
 export const COOKIE_NAME = process.env.COOKIE_NAME || "sid";
 export const SESSION_SECRET = process.env.SESSION_SECRET || "secret sauce";

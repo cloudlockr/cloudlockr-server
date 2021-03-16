@@ -4,8 +4,8 @@ import { LOGIN_POINTS } from "../../constants";
 import emailIpKey from "../../utils/emailIpKey";
 
 export default async (req: Request, res: Response, next: NextFunction) => {
-  const { email } = req.headers;
-  if (!email) {
+  const { email, password } = req.headers;
+  if (!email || !password) {
     res.status(422).json({
       ok: false,
       errors: [{ password: "Incorrect email/password combination" }],
