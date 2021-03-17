@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { COOKIE_NAME } from "../constants";
 import auth from "../services/auth";
 
 class AuthController {
@@ -8,11 +7,11 @@ class AuthController {
       const { email, password, password1 } = req.headers;
 
       auth.registerValidate(email, password, password1);
-      const result = await auth.register(req.session, email!, password!);
+      const result = await auth.register(email!, password!);
 
-      res.status(result.code).json({ ok: true, message: result.message });
+      res.status(result.code).json(result.body);
     } catch (err) {
-      res.status(err.code).json({ ok: false, errors: err.errors });
+      res.status(err.code).json(err.body);
     }
   }
 
@@ -20,25 +19,37 @@ class AuthController {
     try {
       const { email, password } = req.headers;
 
-      const result = await auth.login(req.session, email, password);
+      const result = await auth.login(email, password);
 
-      res.status(result.code).json({ ok: true, message: result.message });
+      res.status(result.code).json(result.body);
     } catch (err) {
-      res.status(err.code).json({ ok: false, errors: err.errors });
+      res.status(err.code).json(err.body);
     }
   }
 
   public async logoutController(req: Request, res: Response) {
     try {
-      console.log(req.session);
-      auth.authenticated(req.session);
-      const result = await auth.logout(req.session);
+      const authHeader = req.headers["authorization"];
+      const { refreshtoken } = req.headers;
 
-      // clear cookie from client side
-      res.clearCookie(COOKIE_NAME);
-      res.status(result.code).json({ ok: true, message: result.message });
+      // ensure user is logged in, and then log the user out
+      auth.authenticate(authHeader);
+      const result = await auth.logout(refreshtoken);
+
+      res.status(result.code).json(result.body);
     } catch (err) {
-      res.status(err.code).json({ ok: false, errors: err.errors });
+      res.status(err.code).json(err.body);
+    }
+  }
+
+  public async refreshController(req: Request, res: Response) {
+    try {
+      const { userid, refreshtoken } = req.headers;
+      const result = await auth.refresh(userid, refreshtoken);
+
+      res.status(result.code).json(result.body);
+    } catch (err) {
+      res.status(err.code).json(err.body);
     }
   }
 }

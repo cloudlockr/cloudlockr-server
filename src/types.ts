@@ -1,4 +1,4 @@
-import { User } from "./entities/DAOs/User.dao";
+import { User } from "./entities/User";
 
 export type reqCustomField = {
   user?: User;

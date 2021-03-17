@@ -8,20 +8,13 @@ declare module "http" {
     email?: string;
     password?: string;
     password1?: string;
+    userid?: string;
+    refreshtoken?: string;
   }
 }
 
 declare module "express" {
   interface Request {
     custom?: reqCustomField;
-  }
-}
-
-declare module "express-session" {
-  interface SessionData {
-    // field to store logged in user's id
-    userId: string;
-    // arbitrary field for refresh endpoint to touch
-    refreshTouch: boolean;
   }
 }
