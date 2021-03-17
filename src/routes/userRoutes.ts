@@ -1,28 +1,15 @@
 import { Router } from "express";
+import authController from "../controllers/authController";
 import userController from "../controllers/user";
 import isAuth from "../middlewares/isAuth";
-import postLimiter from "../middlewares/loginRateLimiter/postLimiter";
-import preLimiter from "../middlewares/loginRateLimiter/preLimiter";
-import {
-  emailValidator,
-  passwordValidator,
-} from "../middlewares/loginValidator";
-import registerValidator from "../middlewares/registerValidator";
 
 const router = Router();
 
-router.post(
-  "/login",
-  preLimiter,
-  emailValidator(),
-  passwordValidator(),
-  postLimiter,
-  userController.login
-);
+router.post("/login", authController.loginController);
 
-router.post("/register", registerValidator(), userController.register);
+router.post("/register", authController.registerController);
 
-router.post("/logout", isAuth, userController.logout);
+router.post("/logout", authController.logoutController);
 
 router.post("/refresh", isAuth, userController.refresh);
 

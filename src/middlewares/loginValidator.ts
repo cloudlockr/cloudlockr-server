@@ -1,6 +1,6 @@
 import argon2 from "argon2";
 import { CustomValidator, header, ValidationChain } from "express-validator";
-import { User } from "../entities/User";
+import { User } from "../entities/DAOs/User.dao";
 
 const emailUsed: CustomValidator = async (email, { req }) => {
   // Resolve no matter what because we only reject in password validator

@@ -1,5 +1,5 @@
 import { CustomValidator, header, ValidationChain } from "express-validator";
-import { User } from "../entities/User";
+import { User } from "../entities/DAOs/User.dao";
 
 const emailUsed: CustomValidator = async (email) => {
   const user = await User.findOne({ where: { email } });

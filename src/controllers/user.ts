@@ -2,7 +2,7 @@ import argon2 from "argon2";
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { COOKIE_NAME } from "../constants";
-import { User } from "../entities/User";
+import { User } from "../entities/DAOs/User.dao";
 
 const login = async (req: Request, res: Response) => {
   // regenerate session before log in
