@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-const deleteUser = async (req: Request, res: Response) => {
+const deleteUser = async (_: Request, res: Response) => {
   res.status(200).json({ ok: true, message: "Account deleted" });
 };
 

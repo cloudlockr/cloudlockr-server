@@ -185,7 +185,10 @@ class AuthService {
     };
   }
 
-  public async refresh(id?: string, refreshToken?: string) {
+  public async refresh(
+    id?: string,
+    refreshToken?: string
+  ): Promise<returnType> {
     const errors: Array<any> = [];
 
     if (!id) {
@@ -199,6 +202,7 @@ class AuthService {
     }
 
     try {
+      // Verify that the refresh token is valid
       this.verifyJWT(refreshToken!, true);
     } catch (err) {
       errors.push({ auth: "Invalid refresh token" });
@@ -206,6 +210,11 @@ class AuthService {
     }
 
     const userId = await redis.get(`${REFRESH_PREFIX}-${refreshToken}`);
+    if (!userId) {
+      // Verify that the refresh token has not expired
+      errors.push({ auth: "Expired refresh token" });
+      throw { code: 403, body: { errors } };
+    }
     if (id !== userId) {
       // Verify that the sender of the refresh token is actually the user
       errors.push({ auth: "Invalid user token pair" });
