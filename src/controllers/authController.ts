@@ -1,11 +1,13 @@
-import { Request, Response } from "express";
+import { Request, Response, Router } from "express";
 import { AuthServices } from "../services/auth";
 
 export class AuthController {
+  private readonly router: Router;
   private readonly authServices: AuthServices;
 
   constructor(authServices: AuthServices) {
     this.authServices = authServices;
+    this.router = Router();
 
     // binding to have "this" in callback function
     this.registerController = this.registerController.bind(this);
@@ -81,5 +83,19 @@ export class AuthController {
     } catch (err) {
       res.status(err.code).json(err.body);
     }
+  }
+
+  public configureRoutes() {
+    this.router.post("/login", this.loginController);
+
+    this.router.post("/register", this.registerController);
+
+    this.router.post("/logout", this.logoutController);
+
+    this.router.post("/refresh", this.refreshController);
+
+    this.router.delete("/", this.deleteController);
+
+    return this.router;
   }
 }
