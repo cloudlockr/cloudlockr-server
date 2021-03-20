@@ -1,6 +1,6 @@
 import argon2 from "argon2";
+import { Redis } from "ioredis";
 import { sign, verify } from "jsonwebtoken";
-import { redis } from "../config/redisConfig";
 import {
   REFRESH_LIFETIME,
   REFRESH_PREFIX,
@@ -9,6 +9,13 @@ import {
   TOKEN_SECRET,
 } from "../constants";
 import { User } from "../entities/User";
+import { UserRepository } from "../repository/UserRepository";
+
+type payloadType = {
+  id: string;
+  iat: number;
+  exp: number;
+};
 
 type returnType = {
   code: number;
@@ -23,7 +30,16 @@ type returnType = {
 };
 
 // This service handles register, login, logout, refresh token, and authentication
-class AuthService {
+// Uses dependency injection for better testability
+export class AuthServices {
+  private readonly userRepository: UserRepository;
+  private readonly redis: Redis;
+
+  constructor(userRepository: UserRepository, redis: Redis) {
+    this.userRepository = userRepository;
+    this.redis = redis;
+  }
+
   private createJWT(id: string, refresh: boolean): string {
     if (refresh) {
       return sign({ id }, REFRESH_SECRET, { expiresIn: REFRESH_LIFETIME });
@@ -50,7 +66,7 @@ class AuthService {
     }
 
     try {
-      return this.verifyJWT(token, false);
+      return this.verifyJWT(token, false) as payloadType;
     } catch (err) {
       errors.push({ auth: "Invalid access token" });
       throw { code: 403, body: { errors } };
@@ -83,10 +99,7 @@ class AuthService {
     const hashedPassword = await argon2.hash(password);
     let user: User;
     try {
-      user = await User.create({
-        email,
-        password: hashedPassword,
-      }).save();
+      user = await this.userRepository.createAndSave(email, hashedPassword);
     } catch (err) {
       // Email already associated with an account
       const errors: Array<any> = [];
@@ -101,7 +114,7 @@ class AuthService {
     const accessToken = this.createJWT(user.id, false);
 
     // Add refresh token to whitelist
-    await redis.set(
+    await this.redis.set(
       `${REFRESH_PREFIX}-${refreshToken}`,
       user.id,
       "ex",
@@ -130,7 +143,7 @@ class AuthService {
       throw { code: 422, body: { errors } };
     }
 
-    const user = await User.findOne({ where: { email } });
+    const user = await this.userRepository.findByEmail(email);
     if (!user) {
       // No user registered with given email
       throw { code: 422, body: { errors } };
@@ -147,7 +160,7 @@ class AuthService {
     const accessToken = this.createJWT(user.id, false);
 
     // Add refresh token to whitelist
-    await redis.set(
+    await this.redis.set(
       `${REFRESH_PREFIX}-${refreshToken}`,
       user.id,
       "ex",
@@ -175,7 +188,7 @@ class AuthService {
     }
 
     // Remove refresh token from whitelist
-    await redis.del(`${REFRESH_PREFIX}-${refreshToken}`);
+    await this.redis.del(`${REFRESH_PREFIX}-${refreshToken}`);
 
     return {
       code: 200,
@@ -209,10 +222,10 @@ class AuthService {
       throw { code: 403, body: { errors } };
     }
 
-    const userId = await redis.get(`${REFRESH_PREFIX}-${refreshToken}`);
+    const userId = await this.redis.get(`${REFRESH_PREFIX}-${refreshToken}`);
     if (!userId) {
-      // Verify that the refresh token has not expired
-      errors.push({ auth: "Expired refresh token" });
+      // Verify that the refresh token has not been revoked
+      errors.push({ auth: "Revoked refresh token" });
       throw { code: 403, body: { errors } };
     }
     if (id !== userId) {
@@ -232,6 +245,24 @@ class AuthService {
       },
     };
   }
-}
 
-export default new AuthService();
+  public async delete(id?: string, refreshToken?: string): Promise<returnType> {
+    if (!refreshToken) {
+      const errors: Array<any> = [];
+      errors.push({ auth: "No refresh token" });
+      throw { code: 422, body: { errors } };
+    }
+
+    // Remove refresh token from whitelist
+    await this.redis.del(`${REFRESH_PREFIX}-${refreshToken}`);
+
+    await this.userRepository.deleteById(id);
+
+    return {
+      code: 200,
+      body: {
+        message: "Account deleted",
+      },
+    };
+  }
+}

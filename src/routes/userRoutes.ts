@@ -1,19 +1,26 @@
 import { Router } from "express";
-import authController from "../controllers/authController";
-import userController from "../controllers/user";
+import { AuthController } from "../controllers/authController";
 
-const router = Router();
+export class UserRouter {
+  router: Router;
+  private readonly authController: AuthController;
 
-router.post("/login", authController.loginController);
+  constructor(authContoller: AuthController) {
+    this.router = Router();
+    this.authController = authContoller;
+  }
 
-router.post("/register", authController.registerController);
+  configureRoutes() {
+    this.router.post("/login", this.authController.loginController);
 
-router.post("/logout", authController.logoutController);
+    this.router.post("/register", this.authController.registerController);
 
-router.post("/refresh", authController.refreshController);
+    this.router.post("/logout", this.authController.logoutController);
 
-router.delete("/", userController.deleteUser);
+    this.router.post("/refresh", this.authController.refreshController);
 
-router.get("/files", userController.getFiles);
+    this.router.delete("/", this.authController.deleteController);
 
-export default router;
+    return this.router;
+  }
+}

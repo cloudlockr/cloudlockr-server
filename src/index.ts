@@ -1,15 +1,18 @@
 import "dotenv/config";
+import "reflect-metadata";
 import express from "express";
 import http from "http";
+import Redis from "ioredis";
 import logger from "morgan";
-import "reflect-metadata";
-import { createConnection } from "typeorm";
+import { createConnection, getCustomRepository } from "typeorm";
 import dbConfig from "./config/dbConfig";
 import { PORT } from "./constants";
+import { AuthController } from "./controllers/authController";
 import customMiddleware from "./middlewares/customMiddleware";
-import generalRateLimiter from "./middlewares/generalRateLimiter";
+import { UserRepository } from "./repository/UserRepository";
 import fileRouter from "./routes/fileRoutes";
-import userRouter from "./routes/userRoutes";
+import { UserRouter } from "./routes/userRoutes";
+import { AuthServices } from "./services/auth";
 
 const main = async () => {
   // creating postgres connection through TypeORM
@@ -34,9 +37,13 @@ const main = async () => {
   // routes for DE1
   app.use("/file", fileRouter);
 
-  // routes for app, rate limited
-  app.use("/user", generalRateLimiter);
-  app.use("/user", userRouter);
+  // routes for app
+  const userRepository = getCustomRepository(UserRepository);
+  const redis = new Redis();
+  const authServices = new AuthServices(userRepository, redis);
+  const authController = new AuthController(authServices);
+  const userRouter = new UserRouter(authController);
+  app.use("/user", userRouter.configureRoutes());
 
   // 404 bad request
   app.use((_, res) => {
