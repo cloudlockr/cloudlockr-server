@@ -1,14 +1,13 @@
+import "reflect-metadata";
 import "dotenv/config";
 import express from "express";
 import http from "http";
 import logger from "morgan";
-import "reflect-metadata";
 import { createConnection, getCustomRepository } from "typeorm";
 import dbConfig from "./config/dbConfig";
 import { redis } from "./config/redisConfig";
 import { PORT } from "./constants";
 import { AuthController } from "./controllers/authController";
-import customMiddleware from "./middlewares/customMiddleware";
 import { UserRepository } from "./repository/UserRepository";
 import fileRouter from "./routes/fileRoutes";
 import { AuthServices } from "./services/auth";
@@ -26,7 +25,6 @@ const main = async () => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(logger("dev"));
-  app.use(customMiddleware);
 
   // GET index route just for some visuals on browser
   app.get("/", (_, res) => {

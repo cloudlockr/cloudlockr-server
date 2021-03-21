@@ -9,37 +9,27 @@ import {
   TOKEN_SECRET,
 } from "../constants";
 import { User } from "../entities/User";
-import { UserRepository } from "../repository/UserRepository";
+import { UserDAO } from "../repository/UserRepository";
 
-type payloadType = {
-  id: string;
-  iat: number;
-  exp: number;
-};
-
-type returnType = {
-  code: number;
-  body: {
-    userId?: string;
-    accessToken?: string;
-    refreshToken?: string;
-    token_type?: string;
-    expires?: number;
-    message?: string;
-  };
-};
-
-// This service handles register, login, logout, refresh token, and authentication
-// Uses dependency injection for better testability
+/**
+ * This class handles all services related to authentication, such as
+ * user registration, login, logout, refreshing access tokens, and authentication.
+ *
+ * Requires dependency injection of a UserRepository and a Redis client
+ */
 export class AuthServices {
-  private readonly userRepository: UserRepository;
+  private readonly userRepository: UserDAO;
   private readonly redis: Redis;
 
-  constructor(userRepository: UserRepository, redis: Redis) {
+  constructor(userRepository: UserDAO, redis: Redis) {
     this.userRepository = userRepository;
     this.redis = redis;
   }
 
+  /**
+   * Helper function for register, login, and refresh.
+   * Either creates an access token or a refresh token.
+   */
   private createJWT(id: string, refresh: boolean): string {
     if (refresh) {
       return sign({ id }, REFRESH_SECRET, { expiresIn: REFRESH_LIFETIME });
@@ -48,6 +38,10 @@ export class AuthServices {
     }
   }
 
+  /**
+   * Helper function for authenticate and refresh.
+   * Verifies whether the given token is a valid access or refresh token
+   */
   private verifyJWT(token: string, refresh: boolean) {
     if (refresh) {
       return verify(token, REFRESH_SECRET);
@@ -56,6 +50,11 @@ export class AuthServices {
     }
   }
 
+  /**
+   * Authenticates whether a user has a valid access token.
+   * If access token is valid, nothing is returned.
+   * If access token is invalid, an error is thrown.
+   */
   public authenticate(authHeader?: string) {
     const errors: Array<any> = [];
 
@@ -73,11 +72,12 @@ export class AuthServices {
     }
   }
 
-  public registerValidate(
-    email?: string,
-    password?: string,
-    password1?: string
-  ) {
+  /**
+   * Performs validation on inputs for register.
+   * If all inputs are valid, nothing is returned.
+   * If any input is invalid, an error is thrown.
+   */
+  public registerValidate(email?: string, password?: string, password1?: string) {
     const errors: Array<any> = [];
 
     if (!email || !email.includes("@")) {
@@ -94,6 +94,12 @@ export class AuthServices {
     }
   }
 
+  /**
+   * Registers a new user with given inputs.
+   * If email is already registered, then an error is thrown.
+   * Otherwise, refresh and access tokens are created and returned.
+   * Refresh is also saved to Redis to keep in the refresh token whitelist
+   */
   public async register(email: string, password: string): Promise<returnType> {
     // Create user in database
     const hashedPassword = await argon2.hash(password);
@@ -114,12 +120,7 @@ export class AuthServices {
     const accessToken = this.createJWT(user.id, false);
 
     // Add refresh token to whitelist
-    await this.redis.set(
-      `${REFRESH_PREFIX}-${refreshToken}`,
-      user.id,
-      "ex",
-      REFRESH_LIFETIME
-    );
+    await this.redis.set(`${REFRESH_PREFIX}-${refreshToken}`, user.id, "ex", REFRESH_LIFETIME);
 
     return {
       code: 201,
@@ -134,6 +135,12 @@ export class AuthServices {
     };
   }
 
+  /**
+   * Logins a user with given inputs.
+   * If email or password are undefined / password does not match, an error is thrown.
+   * Otherwise, refresh and access tokens are created and returned.
+   * Refresh is also saved to Redis to keep in the refresh token whitelist
+   */
   public async login(email?: string, password?: string): Promise<returnType> {
     const errors: Array<any> = [];
     errors.push({ email: "Incorrect email/password combination" });
@@ -160,12 +167,7 @@ export class AuthServices {
     const accessToken = this.createJWT(user.id, false);
 
     // Add refresh token to whitelist
-    await this.redis.set(
-      `${REFRESH_PREFIX}-${refreshToken}`,
-      user.id,
-      "ex",
-      REFRESH_LIFETIME
-    );
+    await this.redis.set(`${REFRESH_PREFIX}-${refreshToken}`, user.id, "ex", REFRESH_LIFETIME);
 
     return {
       code: 200,
@@ -180,6 +182,11 @@ export class AuthServices {
     };
   }
 
+  /**
+   * Logout a user.
+   * If refreshToken is not provided, an error is thrown
+   * Otherwise, deletes refresh token from token whitelist and returns success.
+   */
   public async logout(refreshToken?: string): Promise<returnType> {
     if (!refreshToken) {
       const errors: Array<any> = [];
@@ -198,10 +205,16 @@ export class AuthServices {
     };
   }
 
-  public async refresh(
-    id?: string,
-    refreshToken?: string
-  ): Promise<returnType> {
+  /**
+   * Provides a new access token given a refresh token.
+   * Also requires the user to provide a matching id with that refresh token.
+   * If any inputs are invalid, an error is thrown.
+   * If the refresh token is not valid (forged/expired), an error is thrown.
+   * If the refresh token has already been revoked (user logged out), an error is thrown.
+   * Lastly, if the refresh token payload does not match the id given, an error is thrown.
+   * Otherwise, a new access token is created and returned
+   */
+  public async refresh(id?: string, refreshToken?: string): Promise<returnType> {
     const errors: Array<any> = [];
 
     if (!id) {
@@ -246,6 +259,12 @@ export class AuthServices {
     };
   }
 
+  /**
+   * Deletes a user from database.
+   * If refresh token is not provided, an error is thrown.
+   * Otherwise, deletes user from database and
+   * deletes refresh token from token whitelist and returns success.
+   */
   public async delete(id?: string, refreshToken?: string): Promise<returnType> {
     if (!refreshToken) {
       const errors: Array<any> = [];

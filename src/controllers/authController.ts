@@ -17,7 +17,6 @@ export class AuthController {
     this.deleteController = this.deleteController.bind(this);
   }
 
-  // public async registerController(req: Request, res: Response) {
   public async registerController(req: Request, res: Response) {
     try {
       const { email, password, password1 } = req.headers;

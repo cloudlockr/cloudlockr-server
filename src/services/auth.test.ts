@@ -1,5 +1,6 @@
-import { AuthServices } from "./auth";
 import { REFRESH_PREFIX } from "../constants";
+import { UserDAO } from "../repository/UserRepository";
+import { AuthServices } from "./auth";
 
 const EXIST_EMAIL = "user0@email.com";
 const NON_EXIST_EMAIL = "user1@email.com";
@@ -10,7 +11,7 @@ const PASSWORD = "1234567890";
 /**
  * Mocking dependency injection for TypeORM UserRepository
  */
-class mockUserRepository {
+class mockUserRepository implements UserDAO {
   createAndSave(email: string, password: string) {
     // This condition serves to mock the event in which an unknown error is thrown
     if (password.length < 10) {
@@ -79,11 +80,7 @@ jest.mock("jsonwebtoken", () => {
     sign: jest
       .fn()
       .mockImplementation(
-        (
-          payload: { id: string },
-          secret: string,
-          options: { expiresIn: string }
-        ) => {
+        (payload: { id: string }, secret: string, options: { expiresIn: string }) => {
           return {
             id: payload.id,
             secret: secret,
@@ -168,9 +165,7 @@ test("Register validate undefined inputs", () => {
   } catch (err) {
     expect(err.code).toBe(422);
     expect(err.body.errors[0].email).toBe("Email invalid");
-    expect(err.body.errors[1].password).toBe(
-      "Password must be at least 10 characters long"
-    );
+    expect(err.body.errors[1].password).toBe("Password must be at least 10 characters long");
   }
 });
 
@@ -181,9 +176,7 @@ test("Register validate invalid email and short password", () => {
   } catch (err) {
     expect(err.code).toBe(422);
     expect(err.body.errors[0].email).toBe("Email invalid");
-    expect(err.body.errors[1].password).toBe(
-      "Password must be at least 10 characters long"
-    );
+    expect(err.body.errors[1].password).toBe("Password must be at least 10 characters long");
     expect(err.body.errors[2].password1).toBe("Passwords do not match");
   }
 });
@@ -260,9 +253,7 @@ test("Login undefined inputs", async () => {
     expect(true).toBe(false);
   } catch (err) {
     expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe(
-      "Incorrect email/password combination"
-    );
+    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
   }
 
   try {
@@ -270,9 +261,7 @@ test("Login undefined inputs", async () => {
     expect(true).toBe(false);
   } catch (err) {
     expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe(
-      "Incorrect email/password combination"
-    );
+    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
   }
 
   try {
@@ -280,9 +269,7 @@ test("Login undefined inputs", async () => {
     expect(true).toBe(false);
   } catch (err) {
     expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe(
-      "Incorrect email/password combination"
-    );
+    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
   }
 });
 
@@ -292,9 +279,7 @@ test("Login with unregistered email", async () => {
     expect(true).toBe(false);
   } catch (err) {
     expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe(
-      "Incorrect email/password combination"
-    );
+    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
   }
 });
 
@@ -304,9 +289,7 @@ test("Login with unmatching password", async () => {
     expect(true).toBe(false);
   } catch (err) {
     expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe(
-      "Incorrect email/password combination"
-    );
+    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
   }
 });
 
