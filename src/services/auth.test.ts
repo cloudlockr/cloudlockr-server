@@ -112,43 +112,48 @@ beforeAll(() => {
  * 3. Authenticate with invalid/expired access token, expect error
  * 4. Authenticate with a valid access token, expect success
  */
-test("Authenticate undefined input", () => {
-  try {
-    authServices.authenticate();
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(401);
-    expect(err.body.errors[0].auth).toBe("No access token");
-  }
-});
+describe("Tests for authenticate service", () => {
+  test("Authenticate undefined input", () => {
+    try {
+      authServices.authenticate();
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(401);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("No access token");
+    }
+  });
 
-test("Authenticate without token type", () => {
-  try {
-    authServices.authenticate(NON_EXIST_EMAIL);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(401);
-    expect(err.body.errors[0].auth).toBe("No access token");
-  }
-});
+  test("Authenticate without token type", () => {
+    try {
+      authServices.authenticate(NON_EXIST_EMAIL);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(401);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("No access token");
+    }
+  });
 
-test("Authenticate with invalid/expired access token", () => {
-  try {
-    authServices.authenticate(`bearer ${NON_EXIST_EMAIL}`);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(403);
-    expect(err.body.errors[0].auth).toBe("Invalid access token");
-  }
-});
+  test("Authenticate with invalid/expired access token", () => {
+    try {
+      authServices.authenticate(`bearer ${NON_EXIST_EMAIL}`);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(403);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("Invalid access token");
+    }
+  });
 
-test("Authenticate with valid access token", () => {
-  try {
-    const result = authServices.authenticate(`bearer ${EXIST_EMAIL}`);
-    expect(result).not.toBeUndefined();
-  } catch (err) {
-    expect(true).toBe(false);
-  }
+  test("Authenticate with valid access token", () => {
+    try {
+      const result = authServices.authenticate(`bearer ${EXIST_EMAIL}`);
+      expect(result).not.toBeUndefined();
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
 });
 
 /**
@@ -158,46 +163,51 @@ test("Authenticate with valid access token", () => {
  * 3. Email and passwrd are valid, password1 doesn't match password, expect errors
  * 4. All inputs valid, expect success
  */
-test("Register validate undefined inputs", () => {
-  try {
-    authServices.registerValidate();
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe("Email invalid");
-    expect(err.body.errors[1].password).toBe("Password must be at least 10 characters long");
-  }
-});
+describe("Tests for register validate service", () => {
+  test("Register validate undefined inputs", () => {
+    try {
+      authServices.registerValidate();
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(2);
+      expect(err.body.errors[0].email).toBe("Email invalid");
+      expect(err.body.errors[1].password).toBe("Password must be at least 10 characters long");
+    }
+  });
 
-test("Register validate invalid email and short password", () => {
-  try {
-    authServices.registerValidate("hello", WRONG_PASSWORD);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe("Email invalid");
-    expect(err.body.errors[1].password).toBe("Password must be at least 10 characters long");
-    expect(err.body.errors[2].password1).toBe("Passwords do not match");
-  }
-});
+  test("Register validate invalid email and short password", () => {
+    try {
+      authServices.registerValidate("hello", WRONG_PASSWORD);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(3);
+      expect(err.body.errors[0].email).toBe("Email invalid");
+      expect(err.body.errors[1].password).toBe("Password must be at least 10 characters long");
+      expect(err.body.errors[2].password1).toBe("Passwords do not match");
+    }
+  });
 
-test("Register validate valid email but unmatching passwords", () => {
-  try {
-    authServices.registerValidate(NON_EXIST_EMAIL, PASSWORD, "123");
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].password1).toBe("Passwords do not match");
-  }
-});
+  test("Register validate valid email but unmatching passwords", () => {
+    try {
+      authServices.registerValidate(NON_EXIST_EMAIL, PASSWORD, "123");
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].password1).toBe("Passwords do not match");
+    }
+  });
 
-test("Register validate valid inputs", () => {
-  try {
-    authServices.registerValidate(NON_EXIST_EMAIL, PASSWORD, PASSWORD);
-    expect(true).toBe(true);
-  } catch (err) {
-    expect(true).toBe(false);
-  }
+  test("Register validate valid inputs", () => {
+    try {
+      authServices.registerValidate(NON_EXIST_EMAIL, PASSWORD, PASSWORD);
+      expect(true).toBe(true);
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
 });
 
 /**
@@ -205,39 +215,42 @@ test("Register validate valid inputs", () => {
  * 1. Register with an email that is already registered, expect errors
  * 2. Register with valid unused email, expect success
  */
-test("Register with already registered email", async () => {
-  try {
-    await authServices.register(EXIST_EMAIL, PASSWORD);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe("Email already registered");
-  }
-});
+describe("Tests for register service", () => {
+  test("Register with already registered email", async () => {
+    try {
+      await authServices.register(EXIST_EMAIL, PASSWORD);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].email).toBe("Email already registered");
+    }
+  });
 
-test("Register output unknown error", async () => {
-  try {
-    await authServices.register(EXIST_EMAIL, WRONG_PASSWORD);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors).toHaveLength(0);
-  }
-});
+  test("Register output unknown error", async () => {
+    try {
+      await authServices.register(EXIST_EMAIL, WRONG_PASSWORD);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(0);
+    }
+  });
 
-test("Register with valid email", async () => {
-  try {
-    const result = await authServices.register(NON_EXIST_EMAIL, PASSWORD);
-    expect(result.code).toBe(201);
-    expect(result.body.userId).toBe(NON_EXIST_EMAIL);
-    expect(result.body.refreshToken).not.toBeUndefined();
-    expect(result.body.accessToken).not.toBeUndefined();
-    expect(result.body.token_type).toBe("bearer");
-    expect(result.body.expires).toBe(900);
-    expect(result.body.message).toBe("New account registered");
-  } catch (err) {
-    expect(true).toBe(false);
-  }
+  test("Register with valid email", async () => {
+    try {
+      const result = await authServices.register(NON_EXIST_EMAIL, PASSWORD);
+      expect(result.code).toBe(201);
+      expect(result.body.userId).toBe(NON_EXIST_EMAIL);
+      expect(result.body.refreshToken).not.toBeUndefined();
+      expect(result.body.accessToken).not.toBeUndefined();
+      expect(result.body.token_type).toBe("bearer");
+      expect(result.body.expires).toBe(900);
+      expect(result.body.message).toBe("New account registered");
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
 });
 
 /**
@@ -247,65 +260,72 @@ test("Register with valid email", async () => {
  * 3. Login with wrong password, expect errors
  * 4. Login with correct email and password, expect success
  */
-test("Login undefined inputs", async () => {
-  try {
-    await authServices.login();
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
-  }
+describe("Tests for login service", () => {
+  test("Login undefined inputs", async () => {
+    try {
+      await authServices.login();
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
+    }
 
-  try {
-    await authServices.login(EXIST_EMAIL);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
-  }
+    try {
+      await authServices.login(EXIST_EMAIL);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
+    }
 
-  try {
-    await authServices.login(undefined, PASSWORD);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
-  }
-});
+    try {
+      await authServices.login(undefined, PASSWORD);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
+    }
+  });
 
-test("Login with unregistered email", async () => {
-  try {
-    await authServices.login(NON_EXIST_EMAIL, PASSWORD);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
-  }
-});
+  test("Login with unregistered email", async () => {
+    try {
+      await authServices.login(NON_EXIST_EMAIL, PASSWORD);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
+    }
+  });
 
-test("Login with unmatching password", async () => {
-  try {
-    await authServices.login(EXIST_EMAIL, WRONG_PASSWORD);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
-  }
-});
+  test("Login with unmatching password", async () => {
+    try {
+      await authServices.login(EXIST_EMAIL, WRONG_PASSWORD);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].email).toBe("Incorrect email/password combination");
+    }
+  });
 
-test("Login with correct credentials", async () => {
-  try {
-    const result = await authServices.login(EXIST_EMAIL, PASSWORD);
-    expect(result.code).toBe(200);
-    expect(result.body.userId).toBe(EXIST_EMAIL);
-    expect(result.body.refreshToken).not.toBeUndefined();
-    expect(result.body.accessToken).not.toBeUndefined();
-    expect(result.body.token_type).toBe("bearer");
-    expect(result.body.expires).toBe(900);
-    expect(result.body.message).toBe("Logged in");
-  } catch (err) {
-    expect(true).toBe(false);
-  }
+  test("Login with correct credentials", async () => {
+    try {
+      const result = await authServices.login(EXIST_EMAIL, PASSWORD);
+      expect(result.code).toBe(200);
+      expect(result.body.userId).toBe(EXIST_EMAIL);
+      expect(result.body.refreshToken).not.toBeUndefined();
+      expect(result.body.accessToken).not.toBeUndefined();
+      expect(result.body.token_type).toBe("bearer");
+      expect(result.body.expires).toBe(900);
+      expect(result.body.message).toBe("Logged in");
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
 });
 
 /**
@@ -313,24 +333,27 @@ test("Login with correct credentials", async () => {
  * 1. Logout with no refresh token, expect errors
  * 2. Logout with refresh token, doesn't matter if it's valid, expect success
  */
-test("Logout with no refresh token", async () => {
-  try {
-    await authServices.logout();
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].auth).toBe("No refresh token");
-  }
-});
+describe("Tests for logout service", () => {
+  test("Logout with no refresh token", async () => {
+    try {
+      await authServices.logout();
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("No refresh token");
+    }
+  });
 
-test("Logout successful", async () => {
-  try {
-    const result = await authServices.logout(EXIST_EMAIL);
-    expect(result.code).toBe(200);
-    expect(result.body.message).toBe("Logged out");
-  } catch (err) {
-    expect(true).toBe(false);
-  }
+  test("Logout successful", async () => {
+    try {
+      const result = await authServices.logout(EXIST_EMAIL);
+      expect(result.code).toBe(200);
+      expect(result.body.message).toBe("Logged out");
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
 });
 
 /**
@@ -341,74 +364,82 @@ test("Logout successful", async () => {
  * 4. Refresh with unowned refresh token, expect errors
  * 5. Refresh with owned valid refresh token, expect success
  */
-test("Refresh with undefined inputs", async () => {
-  try {
-    await authServices.refresh();
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(401);
-    expect(err.body.errors[0].auth).toBe("No user id");
-    expect(err.body.errors[1].auth).toBe("No refresh token");
-  }
+describe("Tests for refresh service", () => {
+  test("Refresh with undefined inputs", async () => {
+    try {
+      await authServices.refresh();
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(401);
+      expect(err.body.errors.length).toBe(2);
+      expect(err.body.errors[0].auth).toBe("No user id");
+      expect(err.body.errors[1].auth).toBe("No refresh token");
+    }
 
-  try {
-    await authServices.refresh(EXIST_EMAIL);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(401);
-    expect(err.body.errors[0].auth).toBe("No refresh token");
-  }
+    try {
+      await authServices.refresh(EXIST_EMAIL);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(401);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("No refresh token");
+    }
 
-  try {
-    await authServices.refresh(undefined, EXIST_EMAIL);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(401);
-    expect(err.body.errors[0].auth).toBe("No user id");
-  }
-});
+    try {
+      await authServices.refresh(undefined, EXIST_EMAIL);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(401);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("No user id");
+    }
+  });
 
-test("Refresh with invalid/expired refresh token", async () => {
-  try {
-    await authServices.refresh(EXIST_EMAIL, NON_EXIST_EMAIL);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(403);
-    expect(err.body.errors[0].auth).toBe("Invalid refresh token");
-  }
-});
+  test("Refresh with invalid/expired refresh token", async () => {
+    try {
+      await authServices.refresh(EXIST_EMAIL, NON_EXIST_EMAIL);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(403);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("Invalid refresh token");
+    }
+  });
 
-test("Refresh with revoked refresh token", async () => {
-  try {
-    await authServices.refresh(EXIST_EMAIL, REVOKED_TOKEN);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(403);
-    expect(err.body.errors[0].auth).toBe("Revoked refresh token");
-  }
-});
+  test("Refresh with revoked refresh token", async () => {
+    try {
+      await authServices.refresh(EXIST_EMAIL, REVOKED_TOKEN);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(403);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("Revoked refresh token");
+    }
+  });
 
-test("Refresh with unowned refresh token", async () => {
-  try {
-    await authServices.refresh(NON_EXIST_EMAIL, EXIST_EMAIL);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(403);
-    expect(err.body.errors[0].auth).toBe("Invalid user token pair");
-  }
-});
+  test("Refresh with unowned refresh token", async () => {
+    try {
+      await authServices.refresh(NON_EXIST_EMAIL, EXIST_EMAIL);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(403);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("Invalid user token pair");
+    }
+  });
 
-test("Refresh with valid id and refresh token", async () => {
-  try {
-    const result = await authServices.refresh(EXIST_EMAIL, EXIST_EMAIL);
-    expect(result.code).toBe(200);
-    expect(result.body.accessToken).not.toBeUndefined();
-    expect(result.body.token_type).toBe("bearer");
-    expect(result.body.expires).toBe(900);
-    expect(result.body.message).toBe("Refreshed");
-  } catch (err) {
-    expect(true).toBe(false);
-  }
+  test("Refresh with valid id and refresh token", async () => {
+    try {
+      const result = await authServices.refresh(EXIST_EMAIL, EXIST_EMAIL);
+      expect(result.code).toBe(200);
+      expect(result.body.accessToken).not.toBeUndefined();
+      expect(result.body.token_type).toBe("bearer");
+      expect(result.body.expires).toBe(900);
+      expect(result.body.message).toBe("Refreshed");
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
 });
 
 /**
@@ -417,40 +448,44 @@ test("Refresh with valid id and refresh token", async () => {
  * 2. Delete with undefined id and valid refreshToken, should never happen so expect success
  * 3. Delete with defined id and refreshToken, expect success
  */
-test("Delete with undefined inputs", async () => {
-  try {
-    await authServices.delete();
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].auth).toBe("No refresh token");
-  }
+describe("Tests for delete service", () => {
+  test("Delete with undefined inputs", async () => {
+    try {
+      await authServices.delete();
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("No refresh token");
+    }
 
-  try {
-    await authServices.delete(EXIST_EMAIL);
-    expect(true).toBe(false);
-  } catch (err) {
-    expect(err.code).toBe(422);
-    expect(err.body.errors[0].auth).toBe("No refresh token");
-  }
-});
+    try {
+      await authServices.delete(EXIST_EMAIL);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].auth).toBe("No refresh token");
+    }
+  });
 
-test("Delete with undefined id", async () => {
-  try {
-    const result = await authServices.delete(undefined, EXIST_EMAIL);
-    expect(result.code).toBe(200);
-    expect(result.body.message).toBe("Account deleted");
-  } catch (err) {
-    expect(true).toBe(false);
-  }
-});
+  test("Delete with undefined id", async () => {
+    try {
+      const result = await authServices.delete(undefined, EXIST_EMAIL);
+      expect(result.code).toBe(200);
+      expect(result.body.message).toBe("Account deleted");
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
 
-test("Delete with valid id and refreshToken", async () => {
-  try {
-    const result = await authServices.delete(EXIST_EMAIL, EXIST_EMAIL);
-    expect(result.code).toBe(200);
-    expect(result.body.message).toBe("Account deleted");
-  } catch (err) {
-    expect(true).toBe(false);
-  }
+  test("Delete with valid id and refreshToken", async () => {
+    try {
+      const result = await authServices.delete(EXIST_EMAIL, EXIST_EMAIL);
+      expect(result.code).toBe(200);
+      expect(result.body.message).toBe("Account deleted");
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
 });
