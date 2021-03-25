@@ -29,4 +29,7 @@ export class File extends BaseEntity {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @Column("simple-array")
+  blobs: string[];
 }
