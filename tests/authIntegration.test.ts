@@ -3,7 +3,7 @@ import express from "express";
 import Redis from "ioredis";
 import supertest from "supertest";
 import { createConnection, getConnection, getCustomRepository } from "typeorm";
-import { DB_TEST_URL } from "../src/constants";
+import { DB_TEST_URL, REDIS_PORT } from "../src/constants";
 import { AuthController } from "../src/controllers/authController";
 import { User } from "../src/entities/User";
 import { UserRepository } from "../src/repository/UserRepository";
@@ -24,7 +24,6 @@ beforeAll(async () => {
   // Create connection to test database and clear it
   await createConnection({
     type: "postgres",
-    port: 5432,
     url: DB_TEST_URL,
     entities: [User],
     synchronize: true,
@@ -33,7 +32,7 @@ beforeAll(async () => {
   });
 
   // Create connection to test redis db and clear it
-  redis = new Redis({ db: 1 });
+  redis = new Redis({ port: REDIS_PORT, db: 1 });
   await redis.flushdb();
 
   app = express();
@@ -429,7 +428,7 @@ describe("Tests for delete API endpoint", () => {
     expect(response.body.errors[0].email).toBe("Incorrect email/password combination");
   });
 
-  test("Delete with valid access token and refresh token", async () => {
+  test("Delete with valid access token and invalid refresh token", async () => {
     let response = await supertest(app)
       .post("/user/register")
       .set("email", GOOD_EMAIL1)

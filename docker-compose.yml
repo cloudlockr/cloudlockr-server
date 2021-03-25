@@ -1,23 +1,24 @@
 version: "3"
 
 services:
-  web:
-    container_name: cloudlockr
-    image: dannsy/cloudlockr:1.0
-    ports:
-      - "8080:8080"
-    depends_on: 
-      - db
-      - redis
+  # web:
+  #   image: dannsy/cloudlockr:1.0
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - db
+  #     - redis
 
   db:
-    container_name: cloudlockr-postgres
+    container_name: cloudlockr_db
     image: postgres
     ports:
-      - "5432:5432"
-    env_file: 
+      - "5433:5432"
+    env_file:
       - database.env
 
   redis:
-    container_name: cloudlockr-redis
+    container_name: cloudlockr_redis
     image: redis
+    ports:
+      - "6000:6379"

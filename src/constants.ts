@@ -4,6 +4,7 @@ export const PORT = process.env.PORT || 5000;
 export const DB_URL = process.env.DB_URL;
 export const DB_TEST_URL = process.env.DB_TEST_URL;
 export const REDIS_URL = process.env.REDIS_URL;
+export const REDIS_PORT = Number(process.env.REDIS_PORT);
 
 // constants for JWT
 export const TOKEN_SECRET = process.env.TOKEN_SECRET || "access secret";
