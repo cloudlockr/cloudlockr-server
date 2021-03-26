@@ -3,14 +3,15 @@ import { File } from "../entities/File";
 
 @EntityRepository(File)
 export class FileRepository extends AbstractRepository<File> {
-  findByFileId(fileId: string) {
-    return this.repository.findOne({ fileId });
+  findByFileId(id?: string) {
+    return this.repository.findOne({ id });
   }
 
   async saveBlob(fileData: string, fileId: string, blobNumber: number) {
     // append the given blob to the file specified for the specific user
     // increment total number of blobs
     const file = await this.findByFileId(fileId);
+    if (file === undefined) throw {code: 404, body: "File doesn't exist in database"};
     file.blobs.push(fileData);
     // file.numBlobs = file.blobs.length; // is there automated way to do this in typeorm?
     file.numBlobs = blobNumber;
@@ -19,6 +20,7 @@ export class FileRepository extends AbstractRepository<File> {
   async getBlob(fileId: string, blobNumber: number) {
     // retrieve blob at particular index for the given file
     const file = await this.findByFileId(fileId);
+    if (file === undefined) throw {code: 404, body: "File doesn't exist in database"};
     return file.blobs[blobNumber];
   }
 
@@ -35,6 +37,7 @@ export class FileRepository extends AbstractRepository<File> {
   async getNumBlobs(fileId: string) {
     // retrieve information about file specified by given fileId
     const file = await this.findByFileId(fileId);
+    if (file === undefined) throw {code: 404, body: "File doesn't exist in database"};
     return file.numBlobs;
   }
 
