@@ -8,10 +8,19 @@
 //  TOKEN_LIFETIME,
 //  TOKEN_SECRET,
 //} from "../constants";
-import { User } from "../entities/User";
+//import { User } from "../entities/User";
 import { UserRepository } from "../repository/UserRepository";
-import { File } from "../entities/File";
+//import { File } from "../entities/File";
 import { FileRepository } from "../repository/FileRepository";
+
+type returnType = {
+  code: number;
+  body?: {
+    fileId?: string;
+    numBlobs?: number;
+    fileData?: string;
+  };
+};
 
 // Uses dependency injection for better testability
 export class FileServices {
@@ -25,7 +34,7 @@ export class FileServices {
     //this.redis = redis;
   }
 
-  public createFileMetadata(fileName: string, fileType: string) {
+  public createFileMetadata(fileName: string, fileType: string): returnType {
     const fileId = this.fileRepository.saveMetadata(fileName, fileType);
     return {
       code: 200,
@@ -35,9 +44,9 @@ export class FileServices {
     };
   }
 
-  public retrieveFileMetadata(email: string, fileId: string) {
+  public async retrieveFileMetadata(email: string, fileId: string): Promise<returnType> {
     this.userRepository.findByEmail(email);
-    const numBlobs = this.fileRepository.getNumBlobs(fileId);
+    const numBlobs = await this.fileRepository.getNumBlobs(fileId);
     return {
       code: 200,
       body: {
@@ -46,7 +55,7 @@ export class FileServices {
     };
   }
 
-  public storeBlob(email: string, fileData: string, fileId: string, blobNumber: number) {
+  public storeBlob(email: string, fileData: string, fileId: string, blobNumber: number): returnType {
     this.userRepository.findByEmail(email);
     this.fileRepository.saveBlob(fileData, fileId, blobNumber);
     return {
@@ -54,9 +63,9 @@ export class FileServices {
     };
   }
 
-  public retrieveBlob(email: string, fileId: string, blobNumber: number) {
+  public async retrieveBlob(email: string, fileId: string, blobNumber: number): Promise<returnType> {
     this.userRepository.findByEmail(email);
-    const fileData = this.fileRepository.getBlob(fileId, blobNumber);
+    const fileData = await this.fileRepository.getBlob(fileId, blobNumber);
     return {
       code: 200,
       body: {
@@ -65,7 +74,7 @@ export class FileServices {
     };
   }
 
-  public deleteFile(fileId: string) {
+  public deleteFile(fileId: string): returnType {
     this.fileRepository.deleteById(fileId);
     return {
       code: 200

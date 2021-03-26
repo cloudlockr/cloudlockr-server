@@ -7,18 +7,18 @@ export class FileRepository extends AbstractRepository<File> {
     return this.repository.findOne({ fileId });
   }
 
-  saveBlob(fileData: string, fileId: string, blobNumber: number) {
+  async saveBlob(fileData: string, fileId: string, blobNumber: number) {
     // append the given blob to the file specified for the specific user
     // increment total number of blobs
-    const file = findByFileId(fileId);
+    const file = await this.findByFileId(fileId);
     file.blobs.push(fileData);
     // file.numBlobs = file.blobs.length; // is there automated way to do this in typeorm?
     file.numBlobs = blobNumber;
   }
 
-  getBlob(fileId: string, blobNumber: number) {
+  async getBlob(fileId: string, blobNumber: number) {
     // retrieve blob at particular index for the given file
-    const file = findByFileId(fileId);
+    const file = await this.findByFileId(fileId);
     return file.blobs[blobNumber];
   }
 
@@ -32,9 +32,9 @@ export class FileRepository extends AbstractRepository<File> {
     }).id;
   }
 
-  getNumBlobs(fileId: string) {
+  async getNumBlobs(fileId: string) {
     // retrieve information about file specified by given fileId
-    const file = findByFileId(fileId);
+    const file = await this.findByFileId(fileId);
     return file.numBlobs;
   }
 

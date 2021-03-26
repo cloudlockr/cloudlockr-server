@@ -25,7 +25,7 @@ export class FileController {
       const { fileName, fileType } = req.body;
       // login
       this.authServices.authenticate(authHeader);
-      result = this.fileServices.createFileMetadata(fileName, fileType);
+      const result = this.fileServices.createFileMetadata(fileName, fileType);
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
@@ -38,7 +38,7 @@ export class FileController {
       const { fileData } = req.body;
       // fetch fileId, blobNumber from url
       const { fileId, blobNumber } = req.params;
-      result = this.fileServices.storeBlob(email, fileData, fileId, blobNumber);
+      const result = this.fileServices.storeBlob(email, fileData, fileId, blobNumber);
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
@@ -49,7 +49,7 @@ export class FileController {
     try {
       const { email } = req.headers;
       const { fileId } = req.params;
-      result = this.fileServices.retrieveFileMetadata(email, fileId);
+      const result = await this.fileServices.retrieveFileMetadata(email, fileId);
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
@@ -60,7 +60,7 @@ export class FileController {
     try {
       const { email } = req.headers;
       const { fileId, blobNumber } = req.params;
-      result = this.fileServices.retrieveBlob(email, fileId, blobNumber);
+      const result = await this.fileServices.retrieveBlob(email, fileId, blobNumber);
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
@@ -72,7 +72,7 @@ export class FileController {
       const authHeader = req.headers["authorization"];
       const { fileId } = req.params;
       this.authServices.authenticate(authHeader);
-      result = this.fileServices.deleteFile(fileId);
+      const result = this.fileServices.deleteFile(fileId);
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
