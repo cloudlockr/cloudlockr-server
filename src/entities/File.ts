@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -8,7 +7,7 @@ import {
 } from "typeorm";
 
 @Entity()
-export class File extends BaseEntity {
+export class File {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
@@ -24,12 +23,12 @@ export class File extends BaseEntity {
   @Column({ nullable: false })
   numBlobs!: number;
 
+  @Column("simple-array")
+  blobs!: string[];
+
   @CreateDateColumn()
   createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
-
-  @Column("simple-array")
-  blobs: string[];
 }

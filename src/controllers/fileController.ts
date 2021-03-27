@@ -19,26 +19,14 @@ export class FileController {
     this.deleteFileController = this.deleteFileController.bind(this);
   }
 
-  public async createFileMetadataController(req: Request, res: Response) {
-    try {
-      const authHeader = req.headers["authorization"];
-      const { fileName, fileType } = req.body;
-      // login
-      this.authServices.authenticate(authHeader);
-      const result = this.fileServices.createFileMetadata(fileName, fileType);
-      res.status(result.code).json(result.body);
-    } catch (err) {
-      res.status(err.code).json(err.body);
-    }
-  }
-
   public async storeBlobController(req: Request, res: Response) {
     try {
-      const { email } = req.headers;
       const { fileData } = req.body;
       // fetch fileId, blobNumber from url
       const { fileId, blobNumber } = req.params;
-      const result = this.fileServices.storeBlob(email, fileData, fileId, blobNumber);
+
+      const result = await this.fileServices.storeBlob(fileData, fileId, Number(blobNumber));
+
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
@@ -47,9 +35,10 @@ export class FileController {
 
   public async retrieveFileMetadataController(req: Request, res: Response) {
     try {
-      const { email } = req.headers;
       const { fileId } = req.params;
-      const result = await this.fileServices.retrieveFileMetadata(email, fileId);
+
+      const result = await this.fileServices.retrieveFileMetadata(fileId);
+
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
@@ -58,9 +47,24 @@ export class FileController {
 
   public async retrieveBlobController(req: Request, res: Response) {
     try {
-      const { email } = req.headers;
       const { fileId, blobNumber } = req.params;
-      const result = await this.fileServices.retrieveBlob(email, fileId, blobNumber);
+
+      const result = await this.fileServices.retrieveBlob(fileId, Number(blobNumber));
+
+      res.status(result.code).json(result.body);
+    } catch (err) {
+      res.status(err.code).json(err.body);
+    }
+  }
+
+  public async createFileMetadataController(req: Request, res: Response) {
+    try {
+      const authHeader = req.headers["authorization"];
+      const { fileName, fileType } = req.body;
+      // login
+      const payload = this.authServices.authenticate(authHeader);
+      const result = await this.fileServices.createFileMetadata(fileName, fileType);
+
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
@@ -71,8 +75,10 @@ export class FileController {
     try {
       const authHeader = req.headers["authorization"];
       const { fileId } = req.params;
-      this.authServices.authenticate(authHeader);
+
+      const payload = this.authServices.authenticate(authHeader);
       const result = this.fileServices.deleteFile(fileId);
+
       res.status(result.code).json(result.body);
     } catch (err) {
       res.status(err.code).json(err.body);
@@ -84,7 +90,7 @@ export class FileController {
     this.router.get("/:fileId/:blobNumber", this.retrieveBlobController);
     this.router.get("/:fileId", this.retrieveFileMetadataController);
     this.router.post("/", this.createFileMetadataController);
-    this.router.delete("/:fileId", this.retrieveFileMetadataController);
+    this.router.delete("/:fileId", this.deleteFileController);
     return this.router;
   }
 }

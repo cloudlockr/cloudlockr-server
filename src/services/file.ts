@@ -1,16 +1,4 @@
-//import argon2 from "argon2";
-//import { Redis } from "ioredis";
-//import { sign, verify } from "jsonwebtoken";
-//import {
-//  REFRESH_LIFETIME,
-//  REFRESH_PREFIX,
-//  REFRESH_SECRET,
-//  TOKEN_LIFETIME,
-//  TOKEN_SECRET,
-//} from "../constants";
-//import { User } from "../entities/User";
 import { UserRepository } from "../repository/UserRepository";
-//import { File } from "../entities/File";
 import { FileRepository } from "../repository/FileRepository";
 
 type returnType = {
@@ -19,6 +7,9 @@ type returnType = {
     fileId?: string;
     numBlobs?: number;
     fileData?: string;
+    fileName?: string;
+    fileType?: string;
+    message?: string;
   };
 };
 
@@ -26,58 +17,87 @@ type returnType = {
 export class FileServices {
   private readonly userRepository: UserRepository;
   private readonly fileRepository: FileRepository;
-  //private readonly redis: Redis;
 
-  constructor(fileRepository: FileRepository, userRepository: UserRepository/*, redis: Redis*/) {
+  constructor(fileRepository: FileRepository, userRepository: UserRepository) {
     this.userRepository = userRepository;
     this.fileRepository = fileRepository;
-    //this.redis = redis;
   }
 
-  public createFileMetadata(fileName: string, fileType: string): returnType {
-    const fileId = this.fileRepository.saveMetadata(fileName, fileType);
+  private testUUID(fileId: string): boolean {
+    return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(fileId);
+  }
+
+  public async storeBlob(fileData: string, fileId: string, blobNumber: number): Promise<returnType> {
+    if (!this.testUUID(fileId)) throw { code: 404, body: "fileId is not valid UUID" };
+
+    const file = await this.fileRepository.findByFileId(fileId);
+    if (!file) throw { code: 404, body: "File doesn't exist in database" };
+
+    console.log(fileData);
+
+    if (blobNumber > file.numBlobs) throw { code: 404, body: "Invalid blob number" };
+
+    this.fileRepository.saveBlob(file, fileData, blobNumber);
     return {
       code: 200,
       body: {
-        fileId: fileId
-      }
+        message: "Stored blob",
+      },
     };
   }
 
-  public async retrieveFileMetadata(email: string, fileId: string): Promise<returnType> {
-    this.userRepository.findByEmail(email);
-    const numBlobs = await this.fileRepository.getNumBlobs(fileId);
+  public async retrieveFileMetadata(fileId: string): Promise<returnType> {
+    if (!this.testUUID(fileId)) throw { code: 404, body: "fileId is not valid UUID" };
+
+    const file = await this.fileRepository.findByFileId(fileId);
+    if (!file) throw { code: 404, body: "File doesn't exist in database" };
+
     return {
       code: 200,
       body: {
-        numBlobs: numBlobs
-      }
+        numBlobs: file.numBlobs,
+      },
     };
   }
 
-  public storeBlob(email: string, fileData: string, fileId: string, blobNumber: number): returnType {
-    this.userRepository.findByEmail(email);
-    this.fileRepository.saveBlob(fileData, fileId, blobNumber);
-    return {
-      code: 200,
-    };
-  }
+  public async retrieveBlob(fileId: string, blobNumber: number): Promise<returnType> {
+    if (!this.testUUID(fileId)) throw { code: 404, body: "fileId is not valid UUID" };
 
-  public async retrieveBlob(email: string, fileId: string, blobNumber: number): Promise<returnType> {
-    this.userRepository.findByEmail(email);
-    const fileData = await this.fileRepository.getBlob(fileId, blobNumber);
+    const file = await this.fileRepository.findByFileId(fileId);
+    if (!file) throw { code: 404, body: "File doesn't exist in database" };
+    if (blobNumber >= file.numBlobs) throw { code: 404, body: "Invalid blob number" };
+
     return {
       code: 200,
       body: {
-        fileData: fileData
-      }
+        fileData: file.blobs[blobNumber],
+      },
+    };
+  }
+
+  public async createFileMetadata(fileName: string, fileType: string): Promise<returnType> {
+    if (!fileName || !fileType) throw { code: 404, body: "Invalid fileName/fileType" };
+
+    const file = await this.fileRepository.saveMetadata(fileName, fileType);
+    return {
+      code: 200,
+      body: {
+        fileId: file.id,
+        fileName: file.name,
+        fileType: file.fileType,
+      },
     };
   }
 
   public deleteFile(fileId: string): returnType {
+    if (!this.testUUID(fileId)) throw { code: 404, body: "fileId is not valid UUID" };
+
     this.fileRepository.deleteById(fileId);
     return {
-      code: 200
+      code: 200,
+      body: {
+        message: "Deleted file",
+      },
     };
   }
 }
