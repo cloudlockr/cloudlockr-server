@@ -9,8 +9,10 @@ import { redis } from "./config/redisConfig";
 import { PORT } from "./constants";
 import { AuthController } from "./controllers/authController";
 import { UserRepository } from "./repository/UserRepository";
-import fileRouter from "./routes/fileRoutes";
 import { AuthServices } from "./services/auth";
+import { FileRepository } from "./repository/FileRepository";
+import { FileServices } from "./services/file";
+import { FileController } from "./controllers/fileController";
 
 const main = async () => {
   // creating postgres connection through TypeORM
@@ -32,12 +34,19 @@ const main = async () => {
   });
 
   // routes for DE1
-  app.use("/file", fileRouter);
 
   // dependency injection
   const userRepository = getCustomRepository(UserRepository);
+  const fileRepository = getCustomRepository(FileRepository);
+
   const authServices = new AuthServices(userRepository, redis);
+  const fileServices = new FileServices(fileRepository, userRepository);
+
   const authController = new AuthController(authServices);
+  const fileController = new FileController(fileServices, authServices);
+
+  // routes for DE1
+  app.use("/file", fileController.configureRoutes());
 
   // routes for app
   app.use("/user", authController.configureRoutes());

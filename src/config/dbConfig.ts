@@ -1,5 +1,6 @@
 import { ConnectionOptions } from "typeorm";
 import { DB_URL, __prod__ } from "../constants";
+import { File } from "../entities/File";
 import { User } from "../entities/User";
 
 // database connection configuration for TypeORM
@@ -8,7 +9,7 @@ if (__prod__) {
   connOptions = {
     type: "postgres",
     url: DB_URL,
-    entities: [User],
+    entities: [User, File],
     ssl: true,
     extra: {
       ssl: {
@@ -22,7 +23,7 @@ if (__prod__) {
   connOptions = {
     type: "postgres",
     url: DB_URL,
-    entities: [User],
+    entities: [User, File],
     synchronize: true,
     logging: true,
   };
