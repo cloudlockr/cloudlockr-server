@@ -1,10 +1,5 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { File } from "./File";
 
 @Entity()
 export class User {
@@ -16,6 +11,9 @@ export class User {
 
   @Column({ nullable: false })
   password!: string;
+
+  @OneToMany(() => File, (file) => file.owner, { cascade: ["insert", "update", "remove"] })
+  files!: File[];
 
   @CreateDateColumn()
   createdAt!: Date;

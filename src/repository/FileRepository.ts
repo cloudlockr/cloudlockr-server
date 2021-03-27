@@ -1,5 +1,6 @@
 import { AbstractRepository, EntityRepository } from "typeorm";
 import { File } from "../entities/File";
+import { User } from "../entities/User";
 
 @EntityRepository(File)
 export class FileRepository extends AbstractRepository<File> {
@@ -19,7 +20,7 @@ export class FileRepository extends AbstractRepository<File> {
     return this.manager.save(file);
   }
 
-  saveMetadata(fileName: string, fileType: string) {
+  saveMetadata(user: User, fileName: string, fileType: string) {
     // populate file entity with details about file
     const file = new File();
     file.name = fileName;
@@ -27,6 +28,7 @@ export class FileRepository extends AbstractRepository<File> {
     file.numBlobs = 0;
     file.size = 0;
     file.blobs = [];
+    file.owner = user;
     return this.manager.save(file);
   }
 

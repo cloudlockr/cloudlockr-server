@@ -1,13 +1,7 @@
 import argon2 from "argon2";
 import { Redis } from "ioredis";
 import { sign, verify } from "jsonwebtoken";
-import {
-  REFRESH_LIFETIME,
-  REFRESH_PREFIX,
-  REFRESH_SECRET,
-  TOKEN_LIFETIME,
-  TOKEN_SECRET,
-} from "../constants";
+import { REFRESH_LIFETIME, REFRESH_PREFIX, REFRESH_SECRET, TOKEN_LIFETIME, TOKEN_SECRET } from "../constants";
 import { User } from "../entities/User";
 import { UserDAO } from "../repository/UserRepository";
 
@@ -265,7 +259,7 @@ export class AuthServices {
    * Otherwise, deletes user from database and
    * deletes refresh token from token whitelist and returns success.
    */
-  public async delete(id?: string, refreshToken?: string): Promise<returnType> {
+  public async delete(id: string, refreshToken?: string): Promise<returnType> {
     if (!refreshToken) {
       const errors: Array<any> = [];
       errors.push({ auth: "No refresh token" });
@@ -281,6 +275,29 @@ export class AuthServices {
       code: 200,
       body: {
         message: "Account deleted",
+      },
+    };
+  }
+
+  public async getFiles(id: string): Promise<returnType> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      const errors: Array<any> = [];
+      errors.push({ user: "No user with this ID" });
+      throw { code: 422, body: { errors } };
+    }
+
+    const users = await this.userRepository.findFiles(user.id);
+    const files = users[0].files;
+    const filesMetadata = files.map(({ blobs, ...file }) => {
+      return file;
+    });
+
+    return {
+      code: 200,
+      body: {
+        filesMetadata,
+        message: "Files found",
       },
     };
   }

@@ -15,6 +15,7 @@ export class AuthController {
     this.logoutController = this.logoutController.bind(this);
     this.refreshController = this.refreshController.bind(this);
     this.deleteController = this.deleteController.bind(this);
+    this.getFilesController = this.getFilesController.bind(this);
   }
 
   public async registerController(req: Request, res: Response) {
@@ -84,6 +85,19 @@ export class AuthController {
     }
   }
 
+  public async getFilesController(req: Request, res: Response) {
+    try {
+      const authHeader = req.headers["authorization"];
+
+      const payload = this.authServices.authenticate(authHeader);
+      const result = await this.authServices.getFiles(payload.id);
+
+      res.status(result.code).json(result.body);
+    } catch (err) {
+      res.status(err.code).json(err.body);
+    }
+  }
+
   public configureRoutes() {
     this.router.post("/login", this.loginController);
 
@@ -94,6 +108,8 @@ export class AuthController {
     this.router.post("/refresh", this.refreshController);
 
     this.router.delete("/", this.deleteController);
+
+    this.router.get("/files", this.getFilesController);
 
     return this.router;
   }

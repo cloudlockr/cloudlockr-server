@@ -1,10 +1,5 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from "./User";
 
 @Entity()
 export class File {
@@ -25,6 +20,9 @@ export class File {
 
   @Column("simple-array")
   blobs!: string[];
+
+  @ManyToOne(() => User, (user) => user.files, { onDelete: "CASCADE" })
+  owner!: User;
 
   @CreateDateColumn()
   createdAt!: Date;

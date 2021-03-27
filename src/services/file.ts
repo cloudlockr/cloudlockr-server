@@ -75,10 +75,14 @@ export class FileServices {
     };
   }
 
-  public async createFileMetadata(fileName: string, fileType: string): Promise<returnType> {
+  public async createFileMetadata(userId: string, fileName: string, fileType: string): Promise<returnType> {
     if (!fileName || !fileType) throw { code: 404, body: "Invalid fileName/fileType" };
 
-    const file = await this.fileRepository.saveMetadata(fileName, fileType);
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw { code: 404, body: "User doesn't exist" };
+
+    const file = await this.fileRepository.saveMetadata(user, fileName, fileType);
+
     return {
       code: 200,
       body: {

@@ -12,6 +12,7 @@ type returnType = {
     refreshToken?: string;
     token_type?: string;
     expires?: number;
+    filesMetadata?: Array<any>;
     message?: string;
   };
 };

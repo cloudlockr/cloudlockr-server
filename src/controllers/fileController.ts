@@ -63,7 +63,7 @@ export class FileController {
       const { fileName, fileType } = req.body;
       // login
       const payload = this.authServices.authenticate(authHeader);
-      const result = await this.fileServices.createFileMetadata(fileName, fileType);
+      const result = await this.fileServices.createFileMetadata(payload.id, fileName, fileType);
 
       res.status(result.code).json(result.body);
     } catch (err) {
@@ -76,7 +76,7 @@ export class FileController {
       const authHeader = req.headers["authorization"];
       const { fileId } = req.params;
 
-      const payload = this.authServices.authenticate(authHeader);
+      this.authServices.authenticate(authHeader);
       const result = this.fileServices.deleteFile(fileId);
 
       res.status(result.code).json(result.body);
