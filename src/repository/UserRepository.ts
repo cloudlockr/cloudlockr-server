@@ -1,9 +1,9 @@
 import { AbstractRepository, EntityRepository } from "typeorm";
-import { User } from "../entities/User";
+import { User, UserDTO } from "../entities/User";
 
 export interface UserDAO {
   createAndSave(email: string, password: string): any;
-  findFiles(id: string): Promise<User[]>;
+  findFiles(id: string): Promise<UserDTO[]>;
   findById(id: string): any;
   findByEmail(email: string): any;
   deleteById(id?: string): any;
@@ -32,7 +32,6 @@ export class UserRepository extends AbstractRepository<User> implements UserDAO 
   }
 
   deleteById(id?: string) {
-    // TODO: delete all user files!
     return this.repository.delete(id!);
   }
 }

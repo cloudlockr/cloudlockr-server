@@ -5,6 +5,7 @@ import supertest from "supertest";
 import { createConnection, getConnection, getCustomRepository } from "typeorm";
 import { DB_TEST_URL, REDIS_PORT } from "../src/constants";
 import { AuthController } from "../src/controllers/authController";
+import { File } from "../src/entities/File";
 import { User } from "../src/entities/User";
 import { UserRepository } from "../src/repository/UserRepository";
 import { AuthServices } from "../src/services/auth";
@@ -25,7 +26,7 @@ beforeAll(async () => {
   await createConnection({
     type: "postgres",
     url: DB_TEST_URL,
-    entities: [User],
+    entities: [User, File],
     synchronize: true,
     logging: false,
     dropSchema: true,
@@ -60,10 +61,7 @@ describe("Tests for register API endpoint", () => {
   });
 
   test("Register with invalid email and short password", async () => {
-    const response = await supertest(app)
-      .post("/user/register")
-      .set("email", BAD_EMAIL)
-      .set("password", BAD_PASSWORD);
+    const response = await supertest(app).post("/user/register").set("email", BAD_EMAIL).set("password", BAD_PASSWORD);
 
     expect(response.status).toBe(422);
     expect(response.body.errors.length).toBe(3);
@@ -123,10 +121,7 @@ describe("Tests for login API endpoint", () => {
   });
 
   test("Login with bad headers", async () => {
-    const response = await supertest(app)
-      .post("/user/login")
-      .set("email", BAD_EMAIL)
-      .set("password", BAD_PASSWORD);
+    const response = await supertest(app).post("/user/login").set("email", BAD_EMAIL).set("password", BAD_PASSWORD);
 
     expect(response.status).toBe(422);
     expect(response.body.errors.length).toBe(1);
@@ -134,10 +129,7 @@ describe("Tests for login API endpoint", () => {
   });
 
   test("Login with incorrect password", async () => {
-    const response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", BAD_PASSWORD);
+    const response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", BAD_PASSWORD);
 
     expect(response.status).toBe(422);
     expect(response.body.errors.length).toBe(1);
@@ -145,10 +137,7 @@ describe("Tests for login API endpoint", () => {
   });
 
   test("Login with correct email/password combination", async () => {
-    const response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    const response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
     expect(response.body.userId).toBeTruthy();
@@ -186,19 +175,14 @@ describe("Tests for logout API endpoint", () => {
   });
 
   test("Logout with valid access token but no refresh token", async () => {
-    let response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    let response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
 
     const accessToken = response.body.accessToken;
     const token_type = response.body.token_type;
 
-    response = await supertest(app)
-      .post("/user/logout")
-      .set("authorization", `${token_type} ${accessToken}`);
+    response = await supertest(app).post("/user/logout").set("authorization", `${token_type} ${accessToken}`);
 
     expect(response.status).toBe(422);
     expect(response.body.errors.length).toBe(1);
@@ -206,10 +190,7 @@ describe("Tests for logout API endpoint", () => {
   });
 
   test("Logout with refresh token but no access token", async () => {
-    let response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    let response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
 
@@ -223,10 +204,7 @@ describe("Tests for logout API endpoint", () => {
   });
 
   test("Logout with valid access token and refresh token", async () => {
-    let response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    let response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
 
@@ -267,10 +245,7 @@ describe("Tests for refresh API endpoint", () => {
   });
 
   test("Refresh with invalid/expired refresh token", async () => {
-    const response = await supertest(app)
-      .post("/user/refresh")
-      .set("userid", BAD_ID)
-      .set("refreshtoken", BAD_TOKEN);
+    const response = await supertest(app).post("/user/refresh").set("userid", BAD_ID).set("refreshtoken", BAD_TOKEN);
 
     expect(response.status).toBe(403);
     expect(response.body.errors.length).toBe(1);
@@ -278,10 +253,7 @@ describe("Tests for refresh API endpoint", () => {
   });
 
   test("Refresh with revoked refresh token", async () => {
-    let response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    let response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
 
@@ -298,10 +270,7 @@ describe("Tests for refresh API endpoint", () => {
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Logged out");
 
-    response = await supertest(app)
-      .post("/user/refresh")
-      .set("userid", userId)
-      .set("refreshtoken", refreshToken);
+    response = await supertest(app).post("/user/refresh").set("userid", userId).set("refreshtoken", refreshToken);
 
     expect(response.status).toBe(403);
     expect(response.body.errors.length).toBe(1);
@@ -309,19 +278,13 @@ describe("Tests for refresh API endpoint", () => {
   });
 
   test("Refresh with unmatching user ID", async () => {
-    let response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    let response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
 
     const refreshToken = response.body.refreshToken;
 
-    response = await supertest(app)
-      .post("/user/refresh")
-      .set("userid", BAD_ID)
-      .set("refreshtoken", refreshToken);
+    response = await supertest(app).post("/user/refresh").set("userid", BAD_ID).set("refreshtoken", refreshToken);
 
     expect(response.status).toBe(403);
     expect(response.body.errors.length).toBe(1);
@@ -329,20 +292,14 @@ describe("Tests for refresh API endpoint", () => {
   });
 
   test("Refresh with valid inputs", async () => {
-    let response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    let response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
 
     const refreshToken = response.body.refreshToken;
     const userId = response.body.userId;
 
-    response = await supertest(app)
-      .post("/user/refresh")
-      .set("userid", userId)
-      .set("refreshtoken", refreshToken);
+    response = await supertest(app).post("/user/refresh").set("userid", userId).set("refreshtoken", refreshToken);
 
     expect(response.status).toBe(200);
     expect(response.body.accessToken).toBeTruthy();
@@ -378,19 +335,14 @@ describe("Tests for delete API endpoint", () => {
   });
 
   test("Delete with valid access token but no refresh token", async () => {
-    let response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    let response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
 
     const accessToken = response.body.accessToken;
     const token_type = response.body.token_type;
 
-    response = await supertest(app)
-      .delete("/user")
-      .set("authorization", `${token_type} ${accessToken}`);
+    response = await supertest(app).delete("/user").set("authorization", `${token_type} ${accessToken}`);
 
     expect(response.status).toBe(422);
     expect(response.body.errors.length).toBe(1);
@@ -398,10 +350,7 @@ describe("Tests for delete API endpoint", () => {
   });
 
   test("Delete with valid access token and refresh token", async () => {
-    let response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    let response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(200);
 
@@ -418,10 +367,7 @@ describe("Tests for delete API endpoint", () => {
     expect(response.body.message).toBe("Account deleted");
 
     // Verify that user is actually deleted
-    response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL0)
-      .set("password", GOOD_PASSWORD);
+    response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL0).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(422);
     expect(response.body.errors.length).toBe(1);
@@ -449,10 +395,7 @@ describe("Tests for delete API endpoint", () => {
     expect(response.body.message).toBe("Account deleted");
 
     // Verify that user is actually deleted
-    response = await supertest(app)
-      .post("/user/login")
-      .set("email", GOOD_EMAIL1)
-      .set("password", GOOD_PASSWORD);
+    response = await supertest(app).post("/user/login").set("email", GOOD_EMAIL1).set("password", GOOD_PASSWORD);
 
     expect(response.status).toBe(422);
     expect(response.body.errors.length).toBe(1);

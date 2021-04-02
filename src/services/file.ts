@@ -1,9 +1,9 @@
-import { UserRepository } from "../repository/UserRepository";
-import { FileRepository } from "../repository/FileRepository";
+import { UserDAO } from "../repository/UserRepository";
+import { FileDAO } from "../repository/FileRepository";
 
 type returnType = {
   code: number;
-  body?: {
+  body: {
     fileId?: string;
     numBlobs?: number;
     fileData?: string;
@@ -15,10 +15,10 @@ type returnType = {
 
 // Uses dependency injection for better testability
 export class FileServices {
-  private readonly userRepository: UserRepository;
-  private readonly fileRepository: FileRepository;
+  private readonly userRepository: UserDAO;
+  private readonly fileRepository: FileDAO;
 
-  constructor(fileRepository: FileRepository, userRepository: UserRepository) {
+  constructor(fileRepository: FileDAO, userRepository: UserDAO) {
     this.userRepository = userRepository;
     this.fileRepository = fileRepository;
   }
@@ -32,8 +32,6 @@ export class FileServices {
 
     const file = await this.fileRepository.findByFileId(fileId);
     if (!file) throw { code: 404, body: "File doesn't exist in database" };
-
-    console.log(fileData);
 
     if (blobNumber > file.numBlobs) throw { code: 404, body: "Invalid blob number" };
 
@@ -93,10 +91,10 @@ export class FileServices {
     };
   }
 
-  public deleteFile(fileId: string): returnType {
+  public async deleteFile(fileId: string): Promise<returnType> {
     if (!this.testUUID(fileId)) throw { code: 404, body: "fileId is not valid UUID" };
 
-    this.fileRepository.deleteById(fileId);
+    await this.fileRepository.deleteById(fileId);
     return {
       code: 200,
       body: {

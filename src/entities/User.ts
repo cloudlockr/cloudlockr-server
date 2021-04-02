@@ -1,8 +1,17 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { File } from "./File";
+import { File, FileDTO } from "./File";
+
+export interface UserDTO {
+  id: string;
+  email: string;
+  password: string;
+  files: FileDTO[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 @Entity()
-export class User {
+export class User implements UserDTO {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
@@ -13,7 +22,7 @@ export class User {
   password!: string;
 
   @OneToMany(() => File, (file) => file.owner, { cascade: ["insert", "update", "remove"] })
-  files!: File[];
+  files!: FileDTO[];
 
   @CreateDateColumn()
   createdAt!: Date;

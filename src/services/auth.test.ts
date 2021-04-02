@@ -26,6 +26,23 @@ class mockUserRepository implements UserDAO {
     }
   }
 
+  //@ts-ignore
+  findFiles(id: string) {
+    if (id === EXIST_EMAIL) {
+      return [{ files: [{ blobs: ["0", "1", "2"], name: "file0", fileType: "py", otherStuff: "hello" }] }];
+    } else {
+      return undefined;
+    }
+  }
+
+  findById(id: string) {
+    if (id === EXIST_EMAIL) {
+      return { id: id, password: PASSWORD };
+    } else {
+      return undefined;
+    }
+  }
+
   findByEmail(email: string) {
     if (email === EXIST_EMAIL) {
       return { id: email, password: PASSWORD };
@@ -77,17 +94,13 @@ jest.mock("argon2", () => {
  */
 jest.mock("jsonwebtoken", () => {
   return {
-    sign: jest
-      .fn()
-      .mockImplementation(
-        (payload: { id: string }, secret: string, options: { expiresIn: string }) => {
-          return {
-            id: payload.id,
-            secret: secret,
-            expiresIn: options.expiresIn,
-          };
-        }
-      ),
+    sign: jest.fn().mockImplementation((payload: { id: string }, secret: string, options: { expiresIn: string }) => {
+      return {
+        id: payload.id,
+        secret: secret,
+        expiresIn: options.expiresIn,
+      };
+    }),
     verify: jest.fn().mockImplementation((token: string, _secret: string) => {
       if (token === EXIST_EMAIL || token === REVOKED_TOKEN) {
         return token;
@@ -445,13 +458,13 @@ describe("Tests for refresh service", () => {
 /**
  * Three tests for delete
  * 1. Delete with undefined inputs, expect errors
- * 2. Delete with undefined id and valid refreshToken, should never happen so expect success
+ * 2. Delete with nonexisting id and valid refreshToken, should never happen so expect success
  * 3. Delete with defined id and refreshToken, expect success
  */
 describe("Tests for delete service", () => {
   test("Delete with undefined inputs", async () => {
     try {
-      await authServices.delete();
+      await authServices.delete(EXIST_EMAIL);
       expect(true).toBe(false);
     } catch (err) {
       expect(err.code).toBe(422);
@@ -469,9 +482,9 @@ describe("Tests for delete service", () => {
     }
   });
 
-  test("Delete with undefined id", async () => {
+  test("Delete with nonexisting id", async () => {
     try {
-      const result = await authServices.delete(undefined, EXIST_EMAIL);
+      const result = await authServices.delete(NON_EXIST_EMAIL, EXIST_EMAIL);
       expect(result.code).toBe(200);
       expect(result.body.message).toBe("Account deleted");
     } catch (err) {
@@ -484,6 +497,32 @@ describe("Tests for delete service", () => {
       const result = await authServices.delete(EXIST_EMAIL, EXIST_EMAIL);
       expect(result.code).toBe(200);
       expect(result.body.message).toBe("Account deleted");
+    } catch (err) {
+      expect(true).toBe(false);
+    }
+  });
+});
+
+/**
+ * tests for getFiles
+ */
+describe("Tests for user get files service", () => {
+  test("Get files with nonexisting user ID", async () => {
+    try {
+      await authServices.getFiles(NON_EXIST_EMAIL);
+      expect(true).toBe(false);
+    } catch (err) {
+      expect(err.code).toBe(422);
+      expect(err.body.errors.length).toBe(1);
+      expect(err.body.errors[0].user).toBe("No user with this ID");
+    }
+  });
+
+  test("Get files with existing user ID", async () => {
+    try {
+      const result = await authServices.getFiles(EXIST_EMAIL);
+      expect(result.code).toBe(200);
+      expect(result.body.message).toBe("Files found");
     } catch (err) {
       expect(true).toBe(false);
     }

@@ -1,8 +1,20 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { User } from "./User";
+import { User, UserDTO } from "./User";
+
+export interface FileDTO {
+  id: string;
+  name: string;
+  size: number;
+  fileType: string;
+  numBlobs: number;
+  blobs: string[];
+  owner: UserDTO;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 @Entity()
-export class File {
+export class File implements FileDTO {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
@@ -22,7 +34,7 @@ export class File {
   blobs!: string[];
 
   @ManyToOne(() => User, (user) => user.files, { onDelete: "CASCADE" })
-  owner!: User;
+  owner!: UserDTO;
 
   @CreateDateColumn()
   createdAt!: Date;
