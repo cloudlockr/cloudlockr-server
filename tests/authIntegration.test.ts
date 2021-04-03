@@ -3,7 +3,7 @@ import express from "express";
 import Redis from "ioredis";
 import supertest from "supertest";
 import { createConnection, getConnection, getCustomRepository } from "typeorm";
-import { DB_TEST_URL, REDIS_PORT } from "../src/constants";
+import { DB_AUTH_TEST_URL, REDIS_PORT } from "../src/constants";
 import { AuthController } from "../src/controllers/authController";
 import { File } from "../src/entities/File";
 import { User } from "../src/entities/User";
@@ -25,7 +25,7 @@ beforeAll(async () => {
   // Create connection to test database and clear it
   await createConnection({
     type: "postgres",
-    url: DB_TEST_URL,
+    url: DB_AUTH_TEST_URL,
     entities: [User, File],
     synchronize: true,
     logging: false,

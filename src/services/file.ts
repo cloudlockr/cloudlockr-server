@@ -35,7 +35,8 @@ export class FileServices {
 
     if (blobNumber > file.numBlobs) throw { code: 404, body: "Invalid blob number" };
 
-    this.fileRepository.saveBlob(file, fileData, blobNumber);
+    await this.fileRepository.saveBlob(file, fileData, blobNumber);
+
     return {
       code: 200,
       body: {
