@@ -1,14 +1,21 @@
 import { AbstractRepository, EntityRepository } from "typeorm";
-import { File } from "../entities/File";
-import { User } from "../entities/User";
+import { File, FileDTO } from "../entities/File";
+import { User, UserDTO } from "../entities/User";
+
+export interface FileDAO {
+  findByFileId(id?: string): any;
+  saveBlob(file: FileDTO, fileData: string, blobNumber: number): any;
+  saveMetadata(user: UserDTO, fileName: string, fileType: string): any;
+  deleteById(id?: string): any;
+}
 
 @EntityRepository(File)
-export class FileRepository extends AbstractRepository<File> {
+export class FileRepository extends AbstractRepository<File> implements FileDAO {
   findByFileId(id?: string) {
     return this.repository.findOne(id);
   }
 
-  async saveBlob(file: File, fileData: string, blobNumber: number) {
+  saveBlob(file: File, fileData: string, blobNumber: number) {
     // append the given blob to the file specified for the specific user
     // increment total number of blobs
     if (blobNumber < file.numBlobs) {

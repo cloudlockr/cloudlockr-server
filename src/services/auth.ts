@@ -2,7 +2,7 @@ import argon2 from "argon2";
 import { Redis } from "ioredis";
 import { sign, verify } from "jsonwebtoken";
 import { REFRESH_LIFETIME, REFRESH_PREFIX, REFRESH_SECRET, TOKEN_LIFETIME, TOKEN_SECRET } from "../constants";
-import { User } from "../entities/User";
+import { UserDTO } from "../entities/User";
 import { UserDAO } from "../repository/UserRepository";
 
 /**
@@ -97,7 +97,7 @@ export class AuthServices {
   public async register(email: string, password: string): Promise<returnType> {
     // Create user in database
     const hashedPassword = await argon2.hash(password);
-    let user: User;
+    let user: UserDTO;
     try {
       user = await this.userRepository.createAndSave(email, hashedPassword);
     } catch (err) {

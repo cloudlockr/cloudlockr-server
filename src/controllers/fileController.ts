@@ -77,7 +77,7 @@ export class FileController {
       const { fileId } = req.params;
 
       this.authServices.authenticate(authHeader);
-      const result = this.fileServices.deleteFile(fileId);
+      const result = await this.fileServices.deleteFile(fileId);
 
       res.status(result.code).json(result.body);
     } catch (err) {
