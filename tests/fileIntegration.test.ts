@@ -200,13 +200,16 @@ describe("Tests for store file blob", () => {
   });
 
   test("Store file blob successfully", async () => {
-    let response = await supertest(app).post(`/file/${GOOD_FILEID0}/0`).send({ fileData: BLOB0 });
+    let response = await supertest(app).post(`/file/${GOOD_FILEID0}/0`).send({ fileData: BLOB1 });
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Stored blob");
 
     response = await supertest(app).post(`/file/${GOOD_FILEID0}/1`).send({ fileData: BLOB1 });
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe("Stored blob");
 
+    response = await supertest(app).post(`/file/${GOOD_FILEID0}/0`).send({ fileData: BLOB0 });
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Stored blob");
 
@@ -223,6 +226,11 @@ describe("Tests for store file blob", () => {
 
     const accessToken = response.body.accessToken;
     const token_type = response.body.token_type;
+
+    // Try unauthorized access
+    response = await supertest(app).get("/user/files");
+    expect(response.status).toBe(401);
+    expect(response.body.errors[0].auth).toBe("No access token");
 
     response = await supertest(app).get("/user/files").set("authorization", `${token_type} ${accessToken}`);
 
