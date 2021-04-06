@@ -156,6 +156,9 @@ facilitates user authentication, file management, and database CRUD operations.
 - `POST http://localhost:5000/file/{fileId}/{blobNumber}`
   - Stores a new blob of data associated with the fileId for the given blobNumber
   - **Request requirements**:
+    - Query parameter:
+      - `fileId`: Must be a valid UUID, and must be associated with a file in the database
+      - `blobNumber`: The index of the file blob to retrieve file data from, must be a valid index to the blob array (not negative and not too big)
     - Body:
       - `fileData`: The file data to be stored in the blob
   - **Response**:
@@ -167,7 +170,9 @@ facilitates user authentication, file management, and database CRUD operations.
       - Body: List of errors if any of the request requirements are violated
 - `GET http://localhost:5000/file/{fileId}`
   - Retrieves the base metadata of a file
-  - **Request requirements**: None
+  - **Request requirements**:
+    - Query parameter:
+      - `fileId`: Must be a valid UUID, and must be associated with a file in the database
   - **Response**:
     - Success:
       - Status code: `200`
@@ -177,7 +182,10 @@ facilitates user authentication, file management, and database CRUD operations.
       - Status code: `404`: If `fileId` is not valid UUID, or if `fileId` is not assocated with a file in the database
 - `GET http://localhost:5000/file/{fileId}/{blobNumber}`
   - Retrieves a blob of data associated with the fileId for the given blobNumber
-  - **Request requirements**: None
+  - **Request requirements**:
+    - Query parameter:
+      - `fileId`: Must be a valid UUID, and must be associated with a file in the database
+      - `blobNumber`: The index of the file blob to retrieve file data from, must be a valid index to the blob array (not negative and not too big)
   - **Response**:
     - Success:
       - Status code: `200`
@@ -192,6 +200,8 @@ facilitates user authentication, file management, and database CRUD operations.
   - **Request requirements**:
     - Header:
       - `authorization`: `{token_type} {accessToken}` (from the response body of `register`, `login`, or `refresh`)
+    - Query parameter:
+      - `fileId`: Must be a valid UUID
   - **Response**:
     - Success:
       - Status code: `200`
