@@ -1,3 +1,9 @@
+/**
+ * This module contains the entry point of the server.
+ * It connects to the database, uses some middlewares, handles request routes,
+ * and starts the server.
+ */
+
 import "reflect-metadata";
 import "dotenv/config";
 import express from "express";
@@ -32,8 +38,6 @@ const main = async () => {
   app.get("/", (_, res) => {
     res.status(200).send("Cloudlockr index page, nothing of note here");
   });
-
-  // routes for DE1
 
   // dependency injection
   const userRepository = getCustomRepository(UserRepository);

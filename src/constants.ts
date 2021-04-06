@@ -1,3 +1,9 @@
+/**
+ * This module defines the constants which will be used throughout the project.
+ *
+ * Some constants are defined right here, while others are read from the .env file
+ */
+
 export const __prod__ = process.env.NODE_ENV === "prod";
 export const PORT = process.env.PORT || 5000;
 

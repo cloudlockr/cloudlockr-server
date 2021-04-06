@@ -1,3 +1,13 @@
+/**
+ * This module contains the service which handles all business logic relating to
+ * user authentication and authorization.
+ *
+ * The usage of third-party dependencies are as follows:
+ *  argon2: Used for encryption and decryption user passwords.
+ *  jsonwebtoken: Used for creating new JSON Web Tokens for access and refresh tokens, and also to verify them
+ *  ioredis: Only for intellisense, the actual Redis client used is being injected
+ */
+
 import argon2 from "argon2";
 import { Redis } from "ioredis";
 import { sign, verify } from "jsonwebtoken";
@@ -6,8 +16,8 @@ import { UserDTO } from "../entities/User";
 import { UserDAO } from "../repository/UserRepository";
 
 /**
- * This class handles all services related to authentication, such as
- * user registration, login, logout, refreshing access tokens, and authentication.
+ * Service for authentication, such as user account registration, login, logout,
+ * refreshing access tokens, account deletion
  *
  * Requires dependency injection of a UserRepository and a Redis client
  */
@@ -92,7 +102,7 @@ export class AuthServices {
    * Registers a new user with given inputs.
    * If email is already registered, then an error is thrown.
    * Otherwise, refresh and access tokens are created and returned.
-   * Refresh is also saved to Redis to keep in the refresh token whitelist
+   * Refresh token is also saved to the refresh token whitelist
    */
   public async register(email: string, password: string): Promise<returnType> {
     // Create user in database
@@ -133,7 +143,7 @@ export class AuthServices {
    * Logins a user with given inputs.
    * If email or password are undefined / password does not match, an error is thrown.
    * Otherwise, refresh and access tokens are created and returned.
-   * Refresh is also saved to Redis to keep in the refresh token whitelist
+   * Refresh token is also saved to the refresh token whitelist
    */
   public async login(email?: string, password?: string): Promise<returnType> {
     const errors: Array<any> = [];
@@ -279,9 +289,15 @@ export class AuthServices {
     };
   }
 
+  /**
+   * Gets all files owned by the user specified by the given id.
+   * If the user does not exist in the database, an error is thrown.
+   * Otherwise, the metadata of all the files owned by the user is returned.
+   */
   public async getFiles(id: string): Promise<returnType> {
     const user = await this.userRepository.findById(id);
     if (!user) {
+      // User doesn't exist in database
       const errors: Array<any> = [];
       errors.push({ user: "No user with this ID" });
       throw { code: 422, body: { errors } };
@@ -289,6 +305,7 @@ export class AuthServices {
 
     const users = await this.userRepository.findFiles(user.id);
     const files = users[0].files;
+    // Only retrieve the metadata of the files, not the actual file data
     const filesMetadata = files.map(({ blobs, ...file }) => {
       return file;
     });
