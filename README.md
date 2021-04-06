@@ -18,8 +18,29 @@ facilitates user authentication, file management, and database CRUD operations.
 ## Execution Details
 
 ### Running Server Locally
+1. Clone this repository and cd into it
+2. Create a `.env` file in directory which contains `package.json` and fill in the following fields
+  - `NODE_ENV={server state, probably "dev"}`
+  - `PORT={desired server port}`
+  - `DB_URL={URL of dockerized postgres development database}`
+  - `DB_AUTH_TEST_URL={URL of dockerized postgres integration test database 0, expect to be similar to DB_URL except database name is different}`
+  - `DB_FILE_TEST_URL={URL of dockerized postgres integration test database 1, expect to be similar to DB_URL except database name is different}`
+  - `REDIS_PORT={Port of dockerized Redis}`
+  - `TOKEN_SECRET={your access token secret}`
+  - `REFRESH_SECRET={your refresh token secret}`
+3. Create a `database.env` file in the same directory and fill in the following fields such that they match the `.env DB_URL` field
+  - `POSTGRES_USER={matching username as DB_URL}`
+  - `POSTGRES_PASSWORD={matching password as DB_URL}`
+  - `POSTGRES_DB={matching database as DB_URL}`
+4. Run `docker-compose -f docker-compose.yml up -d`
+5. Run `yarn install`
+6. Run `yarn build && yarn start`
+  - The server should now be started, please refer to [API Documentation](#api-documentation) for instructions on how to call server API endpoints
 
 ### Running Tests
+1. Create the 2 dockerized PostgreSQL test databases, matching `DB_AUTH_TEST_URL` and `DB_FILE_TEST_URL`
+2. Run `yarn test`
+  - Or run `yarn test --coverage` to see test coverage, should be 100% statement and branch coverage except for `src/index.ts` and `src/config/*.ts`, as these are configuration files for the server, and the test files have their own configuration
 
 ---
 ## API Documentation
