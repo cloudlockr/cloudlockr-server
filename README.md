@@ -60,6 +60,7 @@ facilitates user authentication, file management, and database CRUD operations.
       - Body: List of errors if any of the request requirements are violated
 - `POST http://localhost:5000/user/logout`
   - Logs out a user
+  - Requires authorized permission 
   - **Request requirements**:
     - Header:
       - `authorization`: `{token_type} {accessToken}` (from the response body of `register`, `login`, or `refresh`)
@@ -95,6 +96,7 @@ facilitates user authentication, file management, and database CRUD operations.
       - Body: List of errors if any of the request requirements are violated
 - `DELETE http://localhost:5000/user`
   - Deletes a user and all files owned by user
+  - Requires authorized permission
   - **Request requirements**:
     - Header:
       - `authorization`: `{token_type} {accessToken}` (from the response body of `register`, `login`, or `refresh`)
@@ -111,6 +113,7 @@ facilitates user authentication, file management, and database CRUD operations.
       - Body: List of errors if any of the request requirements are violated
 - `GET http://localhost:5000/user/files`
   - Retrieves the metadata of the files owned by a user
+  - Requires authorized permission
   - **Request requirements**:
     - Header:
       - `authorization`: `{token_type} {accessToken}` (from the response body of `register`, `login`, or `refresh`)
@@ -130,40 +133,72 @@ facilitates user authentication, file management, and database CRUD operations.
 ### File
 - `POST http://localhost:5000/file`
   - Creates the base metadata for a new file
+  - Requires authorized permission
   - **Request requirements**:
     - Header:
       - `authorization`: `{token_type} {accessToken}` (from the response body of `register`, `login`, or `refresh`)
     - Body:
-      - `fileName`: The name of the file
-      - `fileType`: The extension of the file
+      - `fileName`: Name of the file
+      - `fileType`: Extension of the file
   - **Response**:
     - Success:
+      - Status code: `200`
+      - Body:
+        - `fileId`: ID associated with newly created file
+        - `fileName`: Name of the file
+        - `fileType`: Extension of the file
     - Fail:
+      - Status code:
+        - `401`: If no `authorization` header
+        - `403`: If access token in `authorization` header is invalid/expired/malformed/forged
+        - `404`: If any of the required request body fields are missing, or if no user is associated with the access token. Possible if user deletes account while creating file
+      - Body: List of errors if any of the request requirements are violated
 - `POST http://localhost:5000/file/{fileId}/{blobNumber}`
   - Stores a new blob of data associated with the fileId for the given blobNumber
   - **Request requirements**:
-    - Header:
+    - Body:
+      - `fileData`: The file data to be stored in the blob
   - **Response**:
     - Success:
+      - Status code: `200`
+      - Body: Success message
     - Fail:
+      - Status code: `404`: If `fileId` is not valid UUID, or if `fileId` is not assocated with a file in the database, or if `blobNumber` is invalid (negative or too large)
+      - Body: List of errors if any of the request requirements are violated
 - `GET http://localhost:5000/file/{fileId}`
   - Retrieves the base metadata of a file
-  - **Request requirements**:
-    - Header:
+  - **Request requirements**: None
   - **Response**:
     - Success:
+      - Status code: `200`
+      - Body: 
+        - `numBlobs`: Number of total file blobs
     - Fail:
+      - Status code: `404`: If `fileId` is not valid UUID, or if `fileId` is not assocated with a file in the database
 - `GET http://localhost:5000/file/{fileId}/{blobNumber}`
   - Retrieves a blob of data associated with the fileId for the given blobNumber
-  - **Request requirements**:
-    - Header:
+  - **Request requirements**: None
   - **Response**:
     - Success:
+      - Status code: `200`
+      - Body: 
+        - `fileData`: The file data associated with the `fileId` and `blobNumber`
     - Fail:
+      - Status code: `404`: If `fileId` is not valid UUID, or if `fileId` is not assocated with a file in the database, or if `blobNumber` is invalid (negative or too large)
+      - Body: List of errors if any of the request requirements are violated
 - `DELETE http://localhost:5000/file/{fileId}`
   - Deletes a file
+  - Requires authorized permission
   - **Request requirements**:
     - Header:
+      - `authorization`: `{token_type} {accessToken}` (from the response body of `register`, `login`, or `refresh`)
   - **Response**:
     - Success:
+      - Status code: `200`
+      - Body: Success message
     - Fail:
+      - Status code: 
+        - `401`: If no `authorization` header
+        - `403`: If access token in `authorization` header is invalid/expired/malformed/forged
+        - `404`: If `fileId` is not valid UUID
+      - Body: List of errors if any of the request requirements are violated
