@@ -46,6 +46,7 @@ facilitates user authentication, file management, and database CRUD operations.
 ## API Documentation
 
 ### User
+Note: The server port will be the `PORT` you chose in `.env`, the following documentation assumes port 5000
 - `POST http://localhost:5000/user/register`
   - Creates a new user account
   - **Request requirements**:
