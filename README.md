@@ -22,10 +22,10 @@ facilitates user authentication, file management, and database CRUD operations.
 2. Create a `.env` file in directory which contains `package.json` and fill in the following fields
   - `NODE_ENV={server state, probably "dev"}`
   - `PORT={desired server port}`
-  - `DB_URL={URL of dockerized postgres development database}`
+  - `DB_URL={URL of dockerized postgres development database, port must be 5433 to match docker-compose.yml}`
   - `DB_AUTH_TEST_URL={URL of dockerized postgres integration test database 0, expect to be similar to DB_URL except database name is different}`
   - `DB_FILE_TEST_URL={URL of dockerized postgres integration test database 1, expect to be similar to DB_URL except database name is different}`
-  - `REDIS_PORT={Port of dockerized Redis}`
+  - `REDIS_PORT=6000`
   - `TOKEN_SECRET={your access token secret}`
   - `REFRESH_SECRET={your refresh token secret}`
 3. Create a `database.env` file in the same directory and fill in the following fields such that they match the `.env DB_URL` field
