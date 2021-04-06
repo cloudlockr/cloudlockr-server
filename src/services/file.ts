@@ -44,7 +44,7 @@ export class FileServices {
    * Stores a blob of file data in the database at the right index of the file blob array.
    * If the given fileId is not a valid UUID, an error is thrown.
    * If the given fileId does not refer to an existing file, an error is thrown.
-   * If the given blob index to store the file data is invalid, then an error is thrown.
+   * If the given blob index to store the file data is invalid (invalid index), then an error is thrown.
    * Otherwise, the file data is stored and a success message is returned.
    */
   public async storeBlob(fileData: string, fileId: string, blobNumber: number): Promise<returnType> {
@@ -53,7 +53,7 @@ export class FileServices {
     const file = await this.fileRepository.findByFileId(fileId);
     if (!file) throw { code: 404, body: "File doesn't exist in database" };
 
-    if (blobNumber > file.numBlobs) throw { code: 404, body: "Invalid blob number" };
+    if (blobNumber > file.numBlobs || blobNumber < 0) throw { code: 404, body: "Invalid blob number" };
 
     await this.fileRepository.saveBlob(file, fileData, blobNumber);
 
@@ -89,7 +89,7 @@ export class FileServices {
    * Retrieves a blob of file data from the database
    * If the given fileId is not a valid UUID, an error is thrown.
    * If the given fileId does not refer to an existing file, an error is thrown.
-   * If the given blob index to store the file data is invalid, then an error is thrown.
+   * If the given blob index to store the file data is invalid (invalid index), then an error is thrown.
    * Otherwise, the file data is returned.
    */
   public async retrieveBlob(fileId: string, blobNumber: number): Promise<returnType> {
@@ -97,7 +97,7 @@ export class FileServices {
 
     const file = await this.fileRepository.findByFileId(fileId);
     if (!file) throw { code: 404, body: "File doesn't exist in database" };
-    if (blobNumber >= file.numBlobs) throw { code: 404, body: "Invalid blob number" };
+    if (blobNumber >= file.numBlobs || blobNumber < 0) throw { code: 404, body: "Invalid blob number" };
 
     return {
       code: 200,

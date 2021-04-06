@@ -197,6 +197,11 @@ describe("Tests for store file blob", () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toBe("Invalid blob number");
+
+    response = await supertest(app).post(`/file/${GOOD_FILEID0}/-1`);
+
+    expect(response.status).toBe(404);
+    expect(response.body).toBe("Invalid blob number");
   });
 
   test("Store file blob successfully", async () => {
@@ -262,6 +267,11 @@ describe("Tests for retrieve file blob", () => {
 
   test("Retrieve file blob with bad blob number", async () => {
     let response = await supertest(app).get(`/file/${GOOD_FILEID0}/3`);
+
+    expect(response.status).toBe(404);
+    expect(response.body).toBe("Invalid blob number");
+
+    response = await supertest(app).get(`/file/${GOOD_FILEID0}/-1`);
 
     expect(response.status).toBe(404);
     expect(response.body).toBe("Invalid blob number");
